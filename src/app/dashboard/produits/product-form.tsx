@@ -147,9 +147,15 @@ export function ProductForm({
           </div>
         ) : null}
 
+        {/*
+          Volontairement sans `name` : le fichier est lu via la ref.
+          Nomme, il entrerait dans le FormData envoye a l'action
+          serveur — soit la photo d'origine de plusieurs Mo, alors
+          qu'elle est deja partie vers le stockage en version reduite.
+          Next.js plafonne le corps d'une action serveur a 1 Mo.
+        */}
         <input
           ref={fichierRef}
-          name="photo"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={choisirPhoto}
