@@ -64,14 +64,54 @@ function heure(iso: string): string {
   });
 }
 
+/** Sol, Si, Mi : un arpege majeur, qui sonne comme un carillon. */
+const NOTES = [784, 988, 1319];
+
+/** Une note : montee quasi instantanee, longue decroissance. */
+function sonner(
+  ctx: AudioContext,
+  frequence: number,
+  depart: number,
+  duree: number,
+  volume: number,
+  forme: OscillatorType,
+) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = forme;
+  osc.frequency.value = frequence;
+
+  // La rampe part et revient a 0.0001, jamais a 0 : une rampe
+  // exponentielle ne peut pas atteindre zero. Passer par une valeur
+  // nulle produirait un claquement.
+  gain.gain.setValueAtTime(0.0001, depart);
+  gain.gain.exponentialRampToValueAtTime(volume, depart + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, depart + duree);
+
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(depart);
+  osc.stop(depart + duree + 0.02);
+}
+
+function arpege(ctx: AudioContext, depart: number) {
+  NOTES.forEach((frequence, index) => {
+    const t = depart + index * 0.13;
+    sonner(ctx, frequence, t, 0.5, 0.22, "triangle");
+    // Une octave au-dessus, discrete : c'est cet harmonique qui donne
+    // le timbre de cloche plutot que celui d'un bip d'appareil.
+    sonner(ctx, frequence * 2, t, 0.32, 0.06, "sine");
+  });
+}
+
 /**
- * Bip de notification, synthetise a la volee.
+ * Carillon de notification, synthetise a la volee.
  *
  * Les navigateurs refusent de jouer un son avant la moindre
  * interaction : l'AudioContext n'est cree qu'au clic du gerant sur
  * « Activer le son ».
  */
-function useBip() {
+function useCarillon() {
   const contexte = useRef<AudioContext | null>(null);
 
   const activer = useCallback(async () => {
@@ -85,28 +125,13 @@ function useBip() {
     const ctx = contexte.current;
     if (!ctx) return;
 
-    // Deux notes courtes : audible dans un snack, sans etre agressif.
-    [0, 0.18].forEach((decalage, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = index === 0 ? 880 : 1174;
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime + decalage);
-      gain.gain.exponentialRampToValueAtTime(
-        0.25,
-        ctx.currentTime + decalage + 0.02,
-      );
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        ctx.currentTime + decalage + 0.16,
-      );
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + decalage);
-      osc.stop(ctx.currentTime + decalage + 0.18);
-    });
+    // Joue deux fois : dans le bruit d'un snack, une seule volee passe
+    // facilement inapercue.
+    arpege(ctx, ctx.currentTime);
+    arpege(ctx, ctx.currentTime + 0.85);
   }, []);
 
-  return { activer, jouer, pret: () => contexte.current !== null };
+  return { activer, jouer };
 }
 
 export function CommandesClient({
@@ -117,7 +142,7 @@ export function CommandesClient({
   commandes: Commande[];
 }) {
   const router = useRouter();
-  const { activer, jouer } = useBip();
+  const { activer, jouer } = useCarillon();
   const [sonActif, setSonActif] = useState(false);
   // On garde le statut brut du canal : « connecte / pas connecte »
   // cachait la difference entre une connexion en cours et une erreur.
@@ -246,9 +271,18 @@ export function CommandesClient({
             🔔 Activer le son
           </button>
         ) : (
-          <span className="rounded-lg bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800">
-            🔔 Son actif
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-lg bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800">
+              🔔 Son actif
+            </span>
+            <button
+              type="button"
+              onClick={jouer}
+              className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-100"
+            >
+              Tester
+            </button>
+          </div>
         )}
       </div>
 
