@@ -12,12 +12,28 @@ export default async function DashboardLayout({
     <div className="flex min-h-full flex-1 flex-col bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-          <Link
-            href="/dashboard"
-            className="text-lg font-bold tracking-tight text-emerald-700"
-          >
-            Nwslo
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="text-lg font-bold tracking-tight text-emerald-700"
+            >
+              Nwslo
+            </Link>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link
+                href="/dashboard"
+                className="font-medium text-slate-600 transition hover:text-emerald-700"
+              >
+                Accueil
+              </Link>
+              <Link
+                href="/dashboard/menu"
+                className="font-medium text-slate-600 transition hover:text-emerald-700"
+              >
+                Menu
+              </Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-4">
             <span className="hidden text-sm text-slate-500 sm:inline">
