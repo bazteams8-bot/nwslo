@@ -33,11 +33,7 @@ type Boutique = {
 };
 
 const SANS_CATEGORIE = "Autres";
-
-/** Identifiant d'ancre utilisable dans une URL. */
-function ancre(titre: string): string {
-  return `cat-${titre.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-}
+const TOUT = "Tout";
 
 export function MenuClient({
   shop,
@@ -53,6 +49,7 @@ export function MenuClient({
   const [pret, setPret] = useState(false);
   const [ouvert, setOuvert] = useState<Product | null>(null);
   const [panierVisible, setPanierVisible] = useState(false);
+  const [filtre, setFiltre] = useState<string>(TOUT);
 
   useEffect(() => {
     setLignes(lirePanier(shop.id));
@@ -73,6 +70,11 @@ export function MenuClient({
       { titre: SANS_CATEGORIE, produits: produits.filter((p) => !p.category_id) },
     ].filter((g) => g.produits.length > 0);
   }, [categories, produits]);
+
+  // Le filtre reduit la carte a une seule categorie. Il porte un nom
+  // et non un index : si le gerant reordonne ses categories pendant
+  // qu'un client regarde, la selection suit le nom, pas la position.
+  const affiches = groupes.filter((g) => filtre === TOUT || g.titre === filtre);
 
   const total = sousTotal(lignes);
   const articles = nombreArticles(lignes);
@@ -192,15 +194,24 @@ export function MenuClient({
       {groupes.length > 1 ? (
         <nav className="sticky top-0 z-30 mt-4 border-b border-bord bg-creme/95 backdrop-blur">
           <div className="defilement-discret mx-auto flex max-w-2xl gap-2 overflow-x-auto px-4 py-3">
-            {groupes.map((groupe) => (
-              <a
-                key={groupe.titre}
-                href={`#${ancre(groupe.titre)}`}
-                className="shrink-0 rounded-full border border-bord px-4 py-1.5 text-sm text-ardoise transition hover:border-terracotta hover:text-terracotta"
-              >
-                {groupe.titre}
-              </a>
-            ))}
+            {[TOUT, ...groupes.map((g) => g.titre)].map((titre) => {
+              const actif = filtre === titre;
+              return (
+                <button
+                  key={titre}
+                  type="button"
+                  aria-pressed={actif}
+                  onClick={() => setFiltre(titre)}
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm transition ${
+                    actif
+                      ? "bg-charbon text-creme"
+                      : "border border-bord text-ardoise hover:border-terracotta hover:text-terracotta"
+                  }`}
+                >
+                  {titre}
+                </button>
+              );
+            })}
           </div>
         </nav>
       ) : null}
@@ -213,8 +224,8 @@ export function MenuClient({
           </p>
         ) : (
           <div className="space-y-8">
-            {groupes.map((groupe) => (
-              <section key={groupe.titre} id={ancre(groupe.titre)} className="scroll-mt-20">
+            {affiches.map((groupe) => (
+              <section key={groupe.titre}>
                 <h2 className="mb-3 text-lg font-semibold text-charbon">
                   {groupe.titre}
                 </h2>
