@@ -127,7 +127,12 @@ export function MenuClient({
         ) : null}
       </div>
 
-      <header className="mx-auto -mt-7 w-full max-w-2xl px-4">
+      {/*
+        `relative z-10` : la couverture est en `relative` pour porter
+        l'image, ce qui la peint au-dessus de ce qui suit. Sans cela le
+        logo, remonte par la marge negative, passe derriere elle.
+      */}
+      <header className="relative z-10 mx-auto -mt-7 w-full max-w-2xl px-4">
         <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border-2 border-creme bg-creme">
           {shop.logo_url ? (
             <Image
