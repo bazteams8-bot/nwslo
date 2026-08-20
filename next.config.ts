@@ -8,6 +8,15 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
   : undefined;
 
 const nextConfig: NextConfig = {
+  // En developpement, Next.js ne sert ses fichiers qu'a `localhost` et
+  // bloque toute autre origine. Depuis un telephone sur le meme wifi,
+  // la page arrive donc rendue mais sans son JavaScript : elle
+  // s'affiche, et aucun bouton ne repond.
+  //
+  // On autorise les adresses privees pour pouvoir tester sur mobile.
+  // Sans effet en production, ou cette protection ne s'applique pas.
+  allowedDevOrigins: ["192.168.1.*", "192.168.*.*", "10.*.*.*"],
+
   images: {
     remotePatterns: supabaseHost
       ? [
