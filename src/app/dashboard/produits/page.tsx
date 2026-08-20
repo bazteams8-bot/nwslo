@@ -128,6 +128,13 @@ export default async function ProduitsPage() {
                     </form>
 
                     <Link
+                      href={`/dashboard/produits/${produit.id}/options`}
+                      className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100"
+                    >
+                      Options
+                    </Link>
+
+                    <Link
                       href={`/dashboard/produits/${produit.id}`}
                       className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100"
                     >
