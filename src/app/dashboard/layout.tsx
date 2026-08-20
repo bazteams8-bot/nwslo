@@ -27,10 +27,16 @@ export default async function DashboardLayout({
                 Accueil
               </Link>
               <Link
+                href="/dashboard/produits"
+                className="font-medium text-slate-600 transition hover:text-emerald-700"
+              >
+                Produits
+              </Link>
+              <Link
                 href="/dashboard/menu"
                 className="font-medium text-slate-600 transition hover:text-emerald-700"
               >
-                Menu
+                Categories
               </Link>
             </nav>
           </div>
