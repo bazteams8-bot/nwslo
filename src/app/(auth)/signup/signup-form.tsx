@@ -18,7 +18,7 @@ export function SignupForm() {
         <NoticeBox message={state.notice} />
         <Link
           href="/login"
-          className="block w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-center font-medium text-white transition hover:bg-emerald-700"
+          className="block w-full rounded-lg bg-terracotta px-4 py-2.5 text-center font-medium text-white transition hover:bg-terracotta-fonce"
         >
           Aller a la connexion
         </Link>

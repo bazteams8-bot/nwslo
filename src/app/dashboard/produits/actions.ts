@@ -15,7 +15,7 @@ async function oublierPhoto(
   url: string | null,
 ) {
   if (!url) return;
-  const chemin = cheminDepuisUrl(url);
+  const chemin = cheminDepuisUrl(url, BUCKET);
   if (chemin) await supabase.storage.from(BUCKET).remove([chemin]);
 }
 

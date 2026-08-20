@@ -137,10 +137,10 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
     return (
       <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
         <p className="text-5xl">✅</p>
-        <h1 className="mt-4 text-2xl font-bold text-slate-900">
+        <h1 className="mt-4 text-2xl font-bold text-charbon">
           Commande #{confirme.numero} enregistree
         </h1>
-        <p className="mt-2 text-slate-600">
+        <p className="mt-2 text-ardoise">
           {shop.name} la voit deja. Envoyez le message pour confirmer et
           suivre avec le snack.
         </p>
@@ -149,18 +149,18 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
           href={confirme.lien}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 rounded-lg bg-emerald-600 px-5 py-3.5 font-medium text-white transition hover:bg-emerald-700"
+          className="mt-6 rounded-lg bg-terracotta px-5 py-3.5 font-medium text-white transition hover:bg-terracotta-fonce"
         >
           Envoyer sur WhatsApp
         </a>
 
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 text-sm text-ardoise-clair">
           Total a payer : {formaterDh(confirme.total)}
         </p>
 
         <Link
           href={`/${shop.slug}`}
-          className="mt-6 text-sm text-slate-500 hover:text-emerald-700"
+          className="mt-6 text-sm text-ardoise-clair hover:text-terracotta-fonce"
         >
           Retour au menu
         </Link>
@@ -171,12 +171,12 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
   if (pret && lignes.length === 0) {
     return (
       <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="text-xl font-semibold text-charbon">
           Votre panier est vide
         </h1>
         <Link
           href={`/${shop.slug}`}
-          className="mt-4 rounded-lg bg-emerald-600 px-5 py-3 font-medium text-white transition hover:bg-emerald-700"
+          className="mt-4 rounded-lg bg-terracotta px-5 py-3 font-medium text-white transition hover:bg-terracotta-fonce"
         >
           Voir le menu
         </Link>
@@ -188,48 +188,48 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
     <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
       <Link
         href={`/${shop.slug}`}
-        className="text-sm text-slate-500 hover:text-emerald-700"
+        className="text-sm text-ardoise-clair hover:text-terracotta-fonce"
       >
         ← Menu
       </Link>
-      <h1 className="mt-2 mb-6 text-2xl font-bold text-slate-900">
+      <h1 className="mt-2 mb-6 text-2xl font-bold text-charbon">
         Votre commande
       </h1>
 
-      <section className="mb-6 rounded-xl border border-slate-200 bg-white p-4">
-        <ul className="divide-y divide-slate-200">
+      <section className="mb-6 rounded-xl border border-bord bg-white p-4">
+        <ul className="divide-y divide-bord">
           {lignes.map((ligne) => (
             <li key={ligne.cle} className="flex justify-between gap-3 py-2">
               <div className="min-w-0">
-                <p className="font-medium text-slate-900">
+                <p className="font-medium text-charbon">
                   {ligne.quantite}x {ligne.name}
                 </p>
                 {ligne.choix.length > 0 ? (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-ardoise-clair">
                     {ligne.choix.map((c) => c.name).join(" · ")}
                   </p>
                 ) : null}
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-ardoise-clair">
                   {formaterDh(prixUnitaire(ligne))} l&apos;unite
                 </p>
               </div>
-              <span className="shrink-0 font-medium text-slate-900">
+              <span className="shrink-0 font-medium text-charbon">
                 {formaterDh(totalLigne(ligne))}
               </span>
             </li>
           ))}
         </ul>
 
-        <dl className="mt-3 space-y-1 border-t border-slate-200 pt-3 text-sm">
-          <div className="flex justify-between text-slate-600">
+        <dl className="mt-3 space-y-1 border-t border-bord pt-3 text-sm">
+          <div className="flex justify-between text-ardoise">
             <dt>Sous-total</dt>
             <dd>{formaterDh(total)}</dd>
           </div>
-          <div className="flex justify-between text-slate-600">
+          <div className="flex justify-between text-ardoise">
             <dt>{livraison ? "Livraison" : "A emporter"}</dt>
             <dd>{formaterDh(frais)}</dd>
           </div>
-          <div className="flex justify-between text-base font-semibold text-slate-900">
+          <div className="flex justify-between text-base font-semibold text-charbon">
             <dt>Total</dt>
             <dd>{formaterDh(total + frais)}</dd>
           </div>
@@ -248,8 +248,8 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
               onClick={() => setLivraison(choix.valeur)}
               className={`rounded-lg border px-4 py-2.5 font-medium transition ${
                 livraison === choix.valeur
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-800"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-100"
+                  ? "border-terracotta bg-terracotta-pale text-terracotta-fonce"
+                  : "border-bord text-ardoise hover:bg-creme-fonce"
               }`}
             >
               {choix.libelle}
@@ -258,7 +258,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
         </div>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-700">
+          <span className="mb-1.5 block text-sm font-medium text-charbon">
             Votre nom
           </span>
           <input
@@ -266,12 +266,12 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
             required
             minLength={2}
             maxLength={80}
-            className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
           />
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-700">
+          <span className="mb-1.5 block text-sm font-medium text-charbon">
             Telephone
           </span>
           <input
@@ -279,13 +279,13 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
             type="tel"
             required
             placeholder="0612345678"
-            className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
           />
         </label>
 
         {livraison ? (
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+            <span className="mb-1.5 block text-sm font-medium text-charbon">
               Adresse de livraison
             </span>
             <textarea
@@ -293,20 +293,20 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
               required
               rows={2}
               placeholder="Rue, quartier, etage..."
-              className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
             />
           </label>
         ) : null}
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-700">
+          <span className="mb-1.5 block text-sm font-medium text-charbon">
             Note pour le snack (optionnel)
           </span>
           <textarea
             name="note"
             rows={2}
             placeholder="Sans oignons, sonner au 2e..."
-            className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
           />
         </label>
 
@@ -322,14 +322,14 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
         <button
           type="submit"
           disabled={envoi || !shop.is_open}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-3.5 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-lg bg-terracotta px-4 py-3.5 font-medium text-white transition hover:bg-terracotta-fonce disabled:cursor-not-allowed disabled:opacity-60"
         >
           {envoi
             ? "Enregistrement..."
             : `Commander · ${formaterDh(total + frais)}`}
         </button>
 
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-ardoise-clair">
           Votre commande sera enregistree, puis WhatsApp s&apos;ouvrira avec
           le message pret a envoyer.
         </p>

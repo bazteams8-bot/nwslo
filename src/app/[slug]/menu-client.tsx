@@ -24,6 +24,8 @@ type Boutique = {
   name: string;
   slug: string;
   description: string | null;
+  logo_url: string | null;
+  cover_url: string | null;
   delivery_fee: number;
   min_order: number;
   is_open: boolean;
@@ -31,6 +33,11 @@ type Boutique = {
 };
 
 const SANS_CATEGORIE = "Autres";
+
+/** Identifiant d'ancre utilisable dans une URL. */
+function ancre(titre: string): string {
+  return `cat-${titre.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
 
 export function MenuClient({
   shop,
@@ -47,8 +54,6 @@ export function MenuClient({
   const [ouvert, setOuvert] = useState<Product | null>(null);
   const [panierVisible, setPanierVisible] = useState(false);
 
-  // Le panier est relu au montage : un client qui revient sur l'onglet
-  // retrouve sa selection.
   useEffect(() => {
     setLignes(lirePanier(shop.id));
     setPret(true);
@@ -101,93 +106,176 @@ export function MenuClient({
   function changerQuantite(cle: string, delta: number) {
     setLignes((actuelles) =>
       actuelles
-        .map((l) =>
-          l.cle === cle ? { ...l, quantite: l.quantite + delta } : l,
-        )
+        .map((l) => (l.cle === cle ? { ...l, quantite: l.quantite + delta } : l))
         .filter((l) => l.quantite > 0),
     );
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-slate-50 pb-24">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-6">
-          <h1 className="text-2xl font-bold text-slate-900">{shop.name}</h1>
-          {shop.description ? (
-            <p className="mt-1 text-slate-600">{shop.description}</p>
-          ) : null}
-          <p className="mt-2 text-sm text-slate-500">
-            {shop.delivery_fee > 0
-              ? `Livraison ${formaterDh(shop.delivery_fee)}`
-              : "Livraison gratuite"}
-            {shop.address ? ` · ${shop.address}` : ""}
-          </p>
+    <div className="flex min-h-full flex-1 flex-col bg-creme pb-28">
+      {/* --- Couverture et identite ------------------------------- */}
+      <div className="relative h-32 w-full bg-terracotta sm:h-44">
+        {shop.cover_url ? (
+          <Image
+            src={shop.cover_url}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        ) : null}
+      </div>
 
-          {!shop.is_open ? (
-            <p
-              role="status"
-              className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
-            >
-              Ce snack est ferme pour le moment. Vous pouvez consulter la
-              carte, mais pas commander.
-            </p>
+      <header className="mx-auto -mt-7 w-full max-w-2xl px-4">
+        <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border-2 border-creme bg-creme">
+          {shop.logo_url ? (
+            <Image
+              src={shop.logo_url}
+              alt=""
+              width={56}
+              height={56}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-xl font-semibold text-terracotta">
+              {shop.name.slice(0, 2).toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        <h1 className="mt-3 text-2xl font-semibold text-charbon">
+          {shop.name}
+        </h1>
+        {shop.description ? (
+          <p className="mt-1 text-ardoise">{shop.description}</p>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          <span
+            className={`rounded-full px-2.5 py-1 ${
+              shop.is_open
+                ? "bg-vert-doux text-vert-fonce"
+                : "bg-creme-fonce text-ardoise"
+            }`}
+          >
+            {shop.is_open ? "ouvert" : "ferme"}
+          </span>
+          <span className="rounded-full bg-creme-fonce px-2.5 py-1 text-ardoise">
+            {shop.delivery_fee > 0
+              ? `livraison ${formaterDh(shop.delivery_fee)}`
+              : "livraison gratuite"}
+          </span>
+          {shop.address ? (
+            <span className="rounded-full bg-creme-fonce px-2.5 py-1 text-ardoise">
+              {shop.address}
+            </span>
           ) : null}
         </div>
+
+        {!shop.is_open ? (
+          <p
+            role="status"
+            className="mt-3 rounded-xl border border-bord bg-creme-fonce px-3 py-2.5 text-sm text-ardoise"
+          >
+            Ce snack est ferme pour le moment. La carte reste consultable.
+          </p>
+        ) : null}
       </header>
 
+      {/* --- Categories ------------------------------------------- */}
+      {groupes.length > 1 ? (
+        <nav className="sticky top-0 z-30 mt-4 border-b border-bord bg-creme/95 backdrop-blur">
+          <div className="defilement-discret mx-auto flex max-w-2xl gap-2 overflow-x-auto px-4 py-3">
+            {groupes.map((groupe) => (
+              <a
+                key={groupe.titre}
+                href={`#${ancre(groupe.titre)}`}
+                className="shrink-0 rounded-full border border-bord px-4 py-1.5 text-sm text-ardoise transition hover:border-terracotta hover:text-terracotta"
+              >
+                {groupe.titre}
+              </a>
+            ))}
+          </div>
+        </nav>
+      ) : null}
+
+      {/* --- Carte ------------------------------------------------- */}
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
         {groupes.length === 0 ? (
-          <p className="py-16 text-center text-slate-500">
+          <p className="py-16 text-center text-ardoise">
             La carte de ce snack est encore vide.
           </p>
         ) : (
           <div className="space-y-8">
             {groupes.map((groupe) => (
-              <section key={groupe.titre}>
-                <h2 className="mb-3 text-lg font-semibold text-slate-900">
+              <section key={groupe.titre} id={ancre(groupe.titre)} className="scroll-mt-20">
+                <h2 className="mb-3 text-lg font-semibold text-charbon">
                   {groupe.titre}
                 </h2>
-                <ul className="space-y-3">
-                  {groupe.produits.map((produit) => (
-                    <li key={produit.id}>
-                      <button
-                        type="button"
-                        disabled={!produit.is_available || !shop.is_open}
-                        onClick={() => setOuvert(produit)}
-                        className="flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 text-start transition enabled:hover:border-emerald-300 enabled:hover:shadow-sm disabled:opacity-55"
-                      >
-                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                          {produit.image_url ? (
-                            <Image
-                              src={produit.image_url}
-                              alt=""
-                              width={64}
-                              height={64}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : null}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-slate-900">
-                            {produit.name}
-                            {!produit.is_available ? (
-                              <span className="ms-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
-                                epuise
-                              </span>
+
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {groupe.produits.map((produit) => {
+                    const commandable = produit.is_available && shop.is_open;
+
+                    return (
+                      <li key={produit.id}>
+                        <button
+                          type="button"
+                          disabled={!commandable}
+                          onClick={() => setOuvert(produit)}
+                          className={`w-full overflow-hidden rounded-2xl border border-bord bg-white text-start transition ${
+                            commandable
+                              ? "hover:border-terracotta"
+                              : "opacity-55"
+                          }`}
+                        >
+                          <div className="relative h-36 w-full bg-creme-fonce">
+                            {produit.image_url ? (
+                              <Image
+                                src={produit.image_url}
+                                alt=""
+                                fill
+                                sizes="(min-width: 640px) 20rem, 100vw"
+                                className="object-cover"
+                              />
                             ) : null}
-                          </p>
-                          {produit.description ? (
-                            <p className="line-clamp-2 text-sm text-slate-500">
-                              {produit.description}
+                          </div>
+
+                          <div className="p-3.5">
+                            <p className="flex items-center gap-2 font-medium text-charbon">
+                              {produit.name}
+                              {!produit.is_available ? (
+                                <span className="rounded-full bg-creme-fonce px-2 py-0.5 text-xs font-normal text-ardoise">
+                                  epuise
+                                </span>
+                              ) : null}
                             </p>
-                          ) : null}
-                        </div>
-                        <span className="shrink-0 font-medium text-slate-900">
-                          {formaterDh(produit.price)}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
+
+                            {produit.description ? (
+                              <p className="mt-1 line-clamp-2 text-sm text-ardoise">
+                                {produit.description}
+                              </p>
+                            ) : null}
+
+                            <div className="mt-3 flex items-center justify-between">
+                              <span className="text-lg font-medium text-charbon">
+                                {formaterDh(produit.price)}
+                              </span>
+                              {commandable ? (
+                                <span
+                                  aria-hidden
+                                  className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta text-lg leading-none text-white"
+                                >
+                                  +
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             ))}
@@ -195,20 +283,21 @@ export function MenuClient({
         )}
       </main>
 
+      {/* --- Panier ------------------------------------------------ */}
       {articles > 0 && shop.is_open ? (
-        <div className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white p-3">
-          <div className="mx-auto flex max-w-2xl items-center gap-3">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-bord bg-creme p-3">
+          <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-2xl bg-charbon p-2">
             <button
               type="button"
               onClick={() => setPanierVisible(true)}
-              className="flex-1 rounded-lg border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-100"
+              className="rounded-xl px-4 py-2.5 text-sm text-creme-fonce transition hover:bg-white/10"
             >
-              Panier ({articles})
+              {articles} article{articles > 1 ? "s" : ""}
             </button>
             <button
               type="button"
               onClick={() => router.push(`/${shop.slug}/commande`)}
-              className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white transition hover:bg-emerald-700"
+              className="flex-1 rounded-xl bg-terracotta px-4 py-2.5 font-medium text-white transition hover:bg-terracotta-fonce"
             >
               Commander · {formaterDh(total)}
             </button>
@@ -249,8 +338,6 @@ function Modal({
   children: React.ReactNode;
   bas?: React.ReactNode;
 }) {
-  // Echap ferme la fenetre : sur mobile le bouton suffit, mais au
-  // clavier c'est le reflexe attendu.
   useEffect(() => {
     const surTouche = (e: KeyboardEvent) => {
       if (e.key === "Escape") onFermer();
@@ -264,20 +351,20 @@ function Modal({
       role="dialog"
       aria-modal="true"
       aria-label={titre}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-charbon/40 sm:items-center"
       onClick={onFermer}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[88vh] w-full max-w-md flex-col rounded-t-2xl bg-white sm:rounded-2xl"
+        className="flex max-h-[90vh] w-full max-w-md flex-col rounded-t-3xl bg-creme sm:rounded-3xl"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h2 className="font-semibold text-slate-900">{titre}</h2>
+        <div className="flex items-center justify-between border-b border-bord px-5 py-3">
+          <h2 className="font-semibold text-charbon">{titre}</h2>
           <button
             type="button"
             onClick={onFermer}
             aria-label="Fermer"
-            className="rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-100"
+            className="rounded-full px-2.5 py-1 text-ardoise transition hover:bg-creme-fonce"
           >
             ✕
           </button>
@@ -287,9 +374,7 @@ function Modal({
           {children}
         </div>
 
-        {bas ? (
-          <div className="border-t border-slate-200 p-4">{bas}</div>
-        ) : null}
+        {bas ? <div className="border-t border-bord p-4">{bas}</div> : null}
       </div>
     </div>
   );
@@ -311,20 +396,13 @@ function ProduitModal({
     setSelection((actuelle) => {
       const dejaLa = actuelle[groupe.id] ?? [];
 
-      // Un seul choix possible : le nouveau remplace l'ancien, comme un
-      // bouton radio.
       if (groupe.max_select === 1) {
         return { ...actuelle, [groupe.id]: dejaLa[0] === itemId ? [] : [itemId] };
       }
 
       if (dejaLa.includes(itemId)) {
-        return {
-          ...actuelle,
-          [groupe.id]: dejaLa.filter((i) => i !== itemId),
-        };
+        return { ...actuelle, [groupe.id]: dejaLa.filter((i) => i !== itemId) };
       }
-      // Au-dela du maximum, on ignore le clic plutot que de remplacer
-      // un choix que le client vient de faire.
       if (dejaLa.length >= groupe.max_select) return actuelle;
 
       return { ...actuelle, [groupe.id]: [...dejaLa, itemId] };
@@ -351,8 +429,7 @@ function ProduitModal({
     selectionValide(g, selection[g.id] ?? []),
   );
 
-  const unitaire =
-    produit.price + choix.reduce((t, c) => t + c.priceDelta, 0);
+  const unitaire = produit.price + choix.reduce((t, c) => t + c.priceDelta, 0);
 
   return (
     <Modal
@@ -360,21 +437,23 @@ function ProduitModal({
       onFermer={onFermer}
       bas={
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-300">
+          <div className="flex items-center gap-1 rounded-xl border border-bord bg-white">
             <button
               type="button"
               onClick={() => setQuantite((q) => Math.max(1, q - 1))}
               aria-label="Diminuer"
-              className="px-3 py-2 text-slate-600 transition hover:bg-slate-100"
+              className="px-3 py-2.5 text-ardoise transition hover:text-charbon"
             >
               −
             </button>
-            <span className="w-8 text-center font-medium">{quantite}</span>
+            <span className="w-8 text-center font-medium text-charbon">
+              {quantite}
+            </span>
             <button
               type="button"
               onClick={() => setQuantite((q) => q + 1)}
               aria-label="Augmenter"
-              className="px-3 py-2 text-slate-600 transition hover:bg-slate-100"
+              className="px-3 py-2.5 text-ardoise transition hover:text-charbon"
             >
               +
             </button>
@@ -383,7 +462,7 @@ function ProduitModal({
             type="button"
             disabled={!complet}
             onClick={() => onAjouter(produit, choix, quantite)}
-            className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex-1 rounded-xl bg-terracotta px-4 py-3 font-medium text-white transition hover:bg-terracotta-fonce disabled:cursor-not-allowed disabled:opacity-50"
           >
             Ajouter · {formaterDh(unitaire * quantite)}
           </button>
@@ -391,19 +470,19 @@ function ProduitModal({
       }
     >
       {produit.image_url ? (
-        <div className="mb-4 overflow-hidden rounded-xl">
+        <div className="relative mb-4 h-44 overflow-hidden rounded-2xl bg-creme-fonce">
           <Image
             src={produit.image_url}
             alt=""
-            width={480}
-            height={240}
-            className="h-44 w-full object-cover"
+            fill
+            sizes="28rem"
+            className="object-cover"
           />
         </div>
       ) : null}
 
       {produit.description ? (
-        <p className="mb-4 text-slate-600">{produit.description}</p>
+        <p className="mb-4 text-ardoise">{produit.description}</p>
       ) : null}
 
       <div className="space-y-5">
@@ -413,9 +492,9 @@ function ProduitModal({
 
           return (
             <fieldset key={groupe.id}>
-              <legend className="mb-2 font-medium text-slate-900">
+              <legend className="mb-2 font-medium text-charbon">
                 {groupe.name}
-                <span className="ms-2 text-xs font-normal text-slate-500">
+                <span className="ms-2 text-xs font-normal text-ardoise-clair">
                   {groupe.is_required ? "obligatoire" : "facultatif"}
                   {groupe.max_select > 1 ? ` · max ${groupe.max_select}` : ""}
                 </span>
@@ -429,10 +508,10 @@ function ProduitModal({
                   return (
                     <label
                       key={item.id}
-                      className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 transition ${
+                      className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                         actif
-                          ? "border-emerald-500 bg-emerald-50"
-                          : "border-slate-200"
+                          ? "border-terracotta bg-terracotta-pale"
+                          : "border-bord bg-white"
                       } ${bloque ? "opacity-50" : "cursor-pointer"}`}
                     >
                       <input
@@ -441,10 +520,10 @@ function ProduitModal({
                         checked={actif}
                         disabled={bloque}
                         onChange={() => basculer(groupe, item.id)}
-                        className="size-4 text-emerald-600 focus:ring-emerald-500"
+                        className="size-4 accent-[var(--terracotta)]"
                       />
-                      <span className="flex-1 text-slate-900">{item.name}</span>
-                      <span className="text-sm text-slate-600">
+                      <span className="flex-1 text-charbon">{item.name}</span>
+                      <span className="text-sm text-ardoise">
                         {item.price_delta === 0
                           ? "inclus"
                           : `+${formaterDh(item.price_delta)}`}
@@ -480,15 +559,15 @@ function PanierModal({
       onFermer={onFermer}
       bas={
         <dl className="space-y-1 text-sm">
-          <div className="flex justify-between text-slate-600">
+          <div className="flex justify-between text-ardoise">
             <dt>Sous-total</dt>
             <dd>{formaterDh(total)}</dd>
           </div>
-          <div className="flex justify-between text-slate-600">
+          <div className="flex justify-between text-ardoise">
             <dt>Livraison</dt>
             <dd>{formaterDh(fraisLivraison)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-1 text-base font-semibold text-slate-900">
+          <div className="flex justify-between border-t border-bord pt-1 text-base font-semibold text-charbon">
             <dt>Total</dt>
             <dd>{formaterDh(total + fraisLivraison)}</dd>
           </div>
@@ -496,45 +575,45 @@ function PanierModal({
       }
     >
       {lignes.length === 0 ? (
-        <p className="py-8 text-center text-slate-500">Votre panier est vide.</p>
+        <p className="py-8 text-center text-ardoise">Votre panier est vide.</p>
       ) : (
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-bord">
           {lignes.map((ligne) => (
             <li key={ligne.cle} className="py-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-900">{ligne.name}</p>
+                  <p className="font-medium text-charbon">{ligne.name}</p>
                   {ligne.choix.length > 0 ? (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-ardoise">
                       {ligne.choix.map((c) => c.name).join(" · ")}
                     </p>
                   ) : null}
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-ardoise-clair">
                     {formaterDh(prixUnitaire(ligne))} l&apos;unite
                   </p>
                 </div>
-                <span className="shrink-0 font-medium text-slate-900">
+                <span className="shrink-0 font-medium text-charbon">
                   {formaterDh(totalLigne(ligne))}
                 </span>
               </div>
 
-              <div className="mt-2 flex items-center gap-1 rounded-lg border border-slate-300 w-fit">
+              <div className="mt-2 flex w-fit items-center gap-1 rounded-xl border border-bord bg-white">
                 <button
                   type="button"
                   onClick={() => onChangerQuantite(ligne.cle, -1)}
                   aria-label={`Retirer un ${ligne.name}`}
-                  className="px-3 py-1.5 text-slate-600 transition hover:bg-slate-100"
+                  className="px-3 py-1.5 text-ardoise transition hover:text-charbon"
                 >
                   −
                 </button>
-                <span className="w-8 text-center text-sm font-medium">
+                <span className="w-8 text-center text-sm font-medium text-charbon">
                   {ligne.quantite}
                 </span>
                 <button
                   type="button"
                   onClick={() => onChangerQuantite(ligne.cle, 1)}
                   aria-label={`Ajouter un ${ligne.name}`}
-                  className="px-3 py-1.5 text-slate-600 transition hover:bg-slate-100"
+                  className="px-3 py-1.5 text-ardoise transition hover:text-charbon"
                 >
                   +
                 </button>

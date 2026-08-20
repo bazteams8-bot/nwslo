@@ -9,18 +9,18 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <>
-      <h1 className="text-xl font-semibold text-slate-900">Connexion</h1>
-      <p className="mt-1 mb-6 text-sm text-slate-500">
+      <h1 className="text-xl font-semibold text-charbon">Connexion</h1>
+      <p className="mt-1 mb-6 text-sm text-ardoise-clair">
         Accedez au tableau de bord de votre snack.
       </p>
 
       <LoginForm next={typeof next === "string" ? next : undefined} />
 
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-ardoise">
         Pas encore de compte ?{" "}
         <Link
           href="/signup"
-          className="font-medium text-emerald-700 hover:underline"
+          className="font-medium text-terracotta-fonce hover:underline"
         >
           Creer un compte
         </Link>

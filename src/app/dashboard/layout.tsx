@@ -9,52 +9,58 @@ export default async function DashboardLayout({
   const { user } = await requireUser();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="flex min-h-full flex-1 flex-col bg-creme">
+      <header className="border-b border-bord bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
             <Link
               href="/dashboard"
-              className="text-lg font-bold tracking-tight text-emerald-700"
+              className="text-lg font-bold tracking-tight text-terracotta-fonce"
             >
               Nwslo
             </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
-                className="font-medium text-slate-600 transition hover:text-emerald-700"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >
                 Accueil
               </Link>
               <Link
                 href="/dashboard/commandes"
-                className="font-medium text-slate-600 transition hover:text-emerald-700"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >
                 Commandes
               </Link>
               <Link
                 href="/dashboard/produits"
-                className="font-medium text-slate-600 transition hover:text-emerald-700"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >
                 Produits
               </Link>
               <Link
                 href="/dashboard/menu"
-                className="font-medium text-slate-600 transition hover:text-emerald-700"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >
                 Categories
+              </Link>
+              <Link
+                href="/dashboard/reglages"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
+              >
+                Reglages
               </Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-slate-500 sm:inline">
+            <span className="hidden text-sm text-ardoise-clair sm:inline">
               {user.email}
             </span>
             <form action={signOut}>
               <button
                 type="submit"
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                className="rounded-lg border border-bord px-3 py-1.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
               >
                 Deconnexion
               </button>

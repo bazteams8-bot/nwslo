@@ -7,7 +7,7 @@ import { ErrorBox, SubmitButton } from "@/components/form";
 const INITIAL: OptionState = { error: null };
 
 const CHAMP =
-  "min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
+  "min-w-0 rounded-lg border border-bord bg-white px-3 py-2 text-charbon outline-none transition placeholder:text-ardoise-clair focus:border-terracotta focus:ring-2 focus:ring-terracotta/20";
 
 /** Vide le formulaire apres un ajout reussi, pour enchainer les saisies. */
 function useResetApresSucces(state: OptionState) {
@@ -50,7 +50,7 @@ export function AddGroupForm({ productId }: { productId: string }) {
           required
           className={`${CHAMP} flex-1`}
         />
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ardoise">
           Choix max
           <input
             name="max_select"
@@ -62,11 +62,11 @@ export function AddGroupForm({ productId }: { productId: string }) {
         </label>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-slate-600">
+      <label className="flex items-center gap-2 text-sm text-ardoise">
         <input
           name="is_required"
           type="checkbox"
-          className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          className="size-4 rounded border-bord text-terracotta focus:ring-terracotta"
         />
         Le client doit obligatoirement choisir
       </label>
@@ -107,7 +107,7 @@ export function AddItemForm({
           required
           className={`${CHAMP} flex-1`}
         />
-        <label className="flex items-center gap-1.5 text-sm text-slate-600">
+        <label className="flex items-center gap-1.5 text-sm text-ardoise">
           +
           <input
             name="price_delta"
@@ -120,7 +120,7 @@ export function AddItemForm({
         </label>
         <button
           type="submit"
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          className="rounded-lg border border-bord px-3 py-2 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
         >
           Ajouter
         </button>

@@ -43,8 +43,8 @@ export default async function ProduitsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Produits</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-charbon">Produits</h1>
+          <p className="mt-1 text-sm text-ardoise-clair">
             {liste.length === 0
               ? "Votre carte est encore vide."
               : `${liste.length} produit${liste.length > 1 ? "s" : ""} sur votre carte.`}
@@ -52,15 +52,15 @@ export default async function ProduitsPage() {
         </div>
         <Link
           href="/dashboard/produits/nouveau"
-          className="rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-700"
+          className="rounded-lg bg-terracotta px-4 py-2.5 font-medium text-white transition hover:bg-terracotta-fonce"
         >
           Ajouter un produit
         </Link>
       </div>
 
       {groupes.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-bord bg-white p-10 text-center">
+          <p className="text-sm text-ardoise-clair">
             Ajoutez votre premier produit pour construire votre carte.
           </p>
         </div>
@@ -68,18 +68,18 @@ export default async function ProduitsPage() {
         groupes.map((groupe) => (
           <section
             key={groupe.titre}
-            className="rounded-xl border border-slate-200 bg-white"
+            className="rounded-xl border border-bord bg-white"
           >
-            <h2 className="border-b border-slate-200 px-5 py-3 font-medium text-slate-900">
+            <h2 className="border-b border-bord px-5 py-3 font-medium text-charbon">
               {groupe.titre}
             </h2>
-            <ul className="divide-y divide-slate-200">
+            <ul className="divide-y divide-bord">
               {groupe.produits.map((produit) => (
                 <li
                   key={produit.id}
                   className="flex flex-wrap items-center gap-4 px-5 py-3"
                 >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-creme-fonce">
                     {produit.image_url ? (
                       <Image
                         src={produit.image_url}
@@ -92,22 +92,22 @@ export default async function ProduitsPage() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-slate-900">
+                    <p className="truncate font-medium text-charbon">
                       {produit.name}
                       {!produit.is_available ? (
-                        <span className="ms-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
+                        <span className="ms-2 rounded bg-creme-fonce px-1.5 py-0.5 text-xs font-normal text-ardoise-clair">
                           epuise
                         </span>
                       ) : null}
                     </p>
                     {produit.description ? (
-                      <p className="truncate text-sm text-slate-500">
+                      <p className="truncate text-sm text-ardoise-clair">
                         {produit.description}
                       </p>
                     ) : null}
                   </div>
 
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-charbon">
                     {Number(produit.price).toFixed(2)} DH
                   </span>
 
@@ -121,7 +121,7 @@ export default async function ProduitsPage() {
                       />
                       <button
                         type="submit"
-                        className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100"
+                        className="rounded-lg border border-bord px-2.5 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce"
                       >
                         {produit.is_available ? "Marquer epuise" : "Remettre"}
                       </button>
@@ -129,14 +129,14 @@ export default async function ProduitsPage() {
 
                     <Link
                       href={`/dashboard/produits/${produit.id}/options`}
-                      className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100"
+                      className="rounded-lg border border-bord px-2.5 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce"
                     >
                       Options
                     </Link>
 
                     <Link
                       href={`/dashboard/produits/${produit.id}`}
-                      className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100"
+                      className="rounded-lg border border-bord px-2.5 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce"
                     >
                       Modifier
                     </Link>
@@ -145,7 +145,7 @@ export default async function ProduitsPage() {
                       <input type="hidden" name="id" value={produit.id} />
                       <ConfirmButton
                         question={`Supprimer « ${produit.name} » ? Les commandes deja passees gardent leur trace.`}
-                        className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
+                        className="rounded-lg border border-bord px-2.5 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
                       >
                         Supprimer
                       </ConfirmButton>
