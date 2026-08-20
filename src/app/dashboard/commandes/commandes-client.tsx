@@ -43,10 +43,10 @@ const LIBELLE: Record<Statut, string> = {
 };
 
 const COULEUR: Record<Statut, string> = {
-  new: "bg-emerald-100 text-emerald-800",
+  new: "bg-terracotta-pale text-terracotta-fonce",
   preparing: "bg-amber-100 text-amber-800",
   ready: "bg-sky-100 text-sky-800",
-  delivered: "bg-slate-100 text-slate-600",
+  delivered: "bg-creme-fonce text-ardoise",
   cancelled: "bg-red-100 text-red-700",
 };
 
@@ -237,15 +237,15 @@ export function CommandesClient({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Commandes</h1>
-          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-charbon">Commandes</h1>
+          <p className="mt-1 flex items-center gap-2 text-sm text-ardoise-clair">
             <span
               aria-hidden
               className={`inline-block size-2 rounded-full ${
                 etat === "SUBSCRIBED"
-                  ? "bg-emerald-500"
+                  ? "bg-terracotta"
                   : etat === "CONNECTING"
-                    ? "bg-slate-300"
+                    ? "bg-ardoise-clair"
                     : "bg-red-500"
               }`}
             />
@@ -266,19 +266,19 @@ export function CommandesClient({
               jouer();
               setSonActif(true);
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            className="rounded-lg border border-bord px-4 py-2.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
           >
             🔔 Activer le son
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="rounded-lg bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800">
+            <span className="rounded-lg bg-terracotta-pale px-4 py-2.5 text-sm font-medium text-terracotta-fonce">
               🔔 Son actif
             </span>
             <button
               type="button"
               onClick={jouer}
-              className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-100"
+              className="rounded-lg border border-bord px-3 py-2.5 text-sm text-ardoise transition hover:bg-creme-fonce"
             >
               Tester
             </button>
@@ -295,8 +295,8 @@ export function CommandesClient({
       ) : null}
 
       {commandes.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-bord bg-white p-10 text-center">
+          <p className="text-sm text-ardoise-clair">
             Aucune commande pour l&apos;instant. Cette page se mettra a jour
             toute seule.
           </p>
@@ -310,14 +310,14 @@ export function CommandesClient({
             return (
               <li
                 key={commande.id}
-                className="overflow-hidden rounded-xl border border-slate-200 bg-white"
+                className="overflow-hidden rounded-xl border border-bord bg-white"
               >
                 <button
                   type="button"
                   onClick={() => setOuverte(deplie ? null : commande.id)}
-                  className="flex w-full flex-wrap items-center gap-3 px-5 py-3 text-start transition hover:bg-slate-50"
+                  className="flex w-full flex-wrap items-center gap-3 px-5 py-3 text-start transition hover:bg-creme"
                 >
-                  <span className="font-semibold text-slate-900">
+                  <span className="font-semibold text-charbon">
                     #{commande.order_number}
                   </span>
                   <span
@@ -325,34 +325,34 @@ export function CommandesClient({
                   >
                     {LIBELLE[commande.status]}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-slate-600">
+                  <span className="min-w-0 flex-1 truncate text-ardoise">
                     {commande.customer_name} ·{" "}
                     {commande.delivery_type === "delivery"
                       ? "livraison"
                       : "a emporter"}
                   </span>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-sm text-ardoise-clair">
                     {heure(commande.created_at)}
                   </span>
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-charbon">
                     {formaterDh(commande.total)}
                   </span>
-                  <span aria-hidden className="text-slate-400">
+                  <span aria-hidden className="text-ardoise-clair">
                     {deplie ? "▲" : "▼"}
                   </span>
                 </button>
 
                 {deplie ? (
-                  <div className="border-t border-slate-200 px-5 py-4">
+                  <div className="border-t border-bord px-5 py-4">
                     <ul className="mb-4 space-y-2">
                       {commande.items.map((item) => (
                         <li key={item.id} className="flex justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="font-medium text-slate-900">
+                            <p className="font-medium text-charbon">
                               {item.quantity}x {item.product_name}
                             </p>
                             {item.options.length > 0 ? (
-                              <p className="text-sm text-slate-500">
+                              <p className="text-sm text-ardoise-clair">
                                 {item.options
                                   .map((o) => o.option_name)
                                   .join(" · ")}
@@ -364,33 +364,33 @@ export function CommandesClient({
                               </p>
                             ) : null}
                           </div>
-                          <span className="shrink-0 text-slate-900">
+                          <span className="shrink-0 text-charbon">
                             {formaterDh(item.line_total)}
                           </span>
                         </li>
                       ))}
                     </ul>
 
-                    <dl className="mb-4 space-y-1 border-t border-slate-200 pt-3 text-sm">
-                      <div className="flex justify-between text-slate-600">
+                    <dl className="mb-4 space-y-1 border-t border-bord pt-3 text-sm">
+                      <div className="flex justify-between text-ardoise">
                         <dt>Sous-total</dt>
                         <dd>{formaterDh(commande.subtotal)}</dd>
                       </div>
-                      <div className="flex justify-between text-slate-600">
+                      <div className="flex justify-between text-ardoise">
                         <dt>Livraison</dt>
                         <dd>{formaterDh(commande.delivery_fee)}</dd>
                       </div>
-                      <div className="flex justify-between font-semibold text-slate-900">
+                      <div className="flex justify-between font-semibold text-charbon">
                         <dt>Total</dt>
                         <dd>{formaterDh(commande.total)}</dd>
                       </div>
                     </dl>
 
-                    <div className="mb-4 space-y-1 text-sm text-slate-600">
+                    <div className="mb-4 space-y-1 text-sm text-ardoise">
                       <p>
                         <a
                           href={`tel:${commande.customer_phone}`}
-                          className="font-medium text-emerald-700 hover:underline"
+                          className="font-medium text-terracotta-fonce hover:underline"
                         >
                           {commande.customer_phone}
                         </a>
@@ -412,7 +412,7 @@ export function CommandesClient({
                           <input type="hidden" name="status" value={suivant} />
                           <button
                             type="submit"
-                            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+                            className="rounded-lg bg-terracotta px-4 py-2 text-sm font-medium text-white transition hover:bg-terracotta-fonce"
                           >
                             Marquer « {LIBELLE[suivant]} »
                           </button>
@@ -430,7 +430,7 @@ export function CommandesClient({
                           />
                           <button
                             type="submit"
-                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
+                            className="rounded-lg border border-bord px-4 py-2 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
                           >
                             Annuler
                           </button>

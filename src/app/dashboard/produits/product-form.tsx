@@ -89,7 +89,7 @@ export function ProductForm({
       />
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        <span className="mb-1.5 block text-sm font-medium text-charbon">
           Description (optionnel)
         </span>
         <textarea
@@ -97,7 +97,7 @@ export function ProductForm({
           defaultValue={produit?.description ?? ""}
           rows={2}
           placeholder="Poulet marine, frites, sauce fromagere"
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+          className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 text-charbon outline-none transition placeholder:text-ardoise-clair focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
         />
       </label>
 
@@ -112,13 +112,13 @@ export function ProductForm({
       />
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        <span className="mb-1.5 block text-sm font-medium text-charbon">
           Categorie
         </span>
         <select
           name="category_id"
           defaultValue={produit?.category_id ?? ""}
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+          className="block w-full rounded-lg border border-bord bg-white px-3 py-2.5 text-charbon outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
         >
           <option value="">Sans categorie</option>
           {categories.map((c) => (
@@ -130,12 +130,12 @@ export function ProductForm({
       </label>
 
       <div>
-        <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        <span className="mb-1.5 block text-sm font-medium text-charbon">
           Photo (optionnel)
         </span>
 
         {apercu ? (
-          <div className="mb-2 overflow-hidden rounded-lg border border-slate-200">
+          <div className="mb-2 overflow-hidden rounded-lg border border-bord">
             <Image
               src={apercu}
               alt=""
@@ -159,9 +159,9 @@ export function ProductForm({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={choisirPhoto}
-          className="block w-full text-sm text-slate-600 file:me-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          className="block w-full text-sm text-ardoise file:me-3 file:rounded-lg file:border-0 file:bg-creme-fonce file:px-3 file:py-2 file:text-sm file:font-medium file:text-charbon hover:file:bg-bord"
         />
-        <span className="mt-1.5 block text-xs text-slate-500">
+        <span className="mt-1.5 block text-xs text-ardoise-clair">
           La photo est reduite automatiquement avant l&apos;envoi.
         </span>
       </div>
@@ -172,7 +172,7 @@ export function ProductForm({
         <button
           type="submit"
           disabled={occupe}
-          className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex-1 rounded-lg bg-terracotta px-4 py-2.5 font-medium text-white transition hover:bg-terracotta-fonce disabled:cursor-not-allowed disabled:opacity-60"
         >
           {etape === "photo"
             ? "Envoi de la photo..."
@@ -184,7 +184,7 @@ export function ProductForm({
         </button>
         <Link
           href="/dashboard/produits"
-          className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+          className="rounded-lg border border-bord px-4 py-2.5 font-medium text-charbon transition hover:bg-creme-fonce"
         >
           Annuler
         </Link>

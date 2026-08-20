@@ -9,6 +9,8 @@ type Boutique = {
   name: string;
   slug: string;
   description: string | null;
+  logo_url: string | null;
+  cover_url: string | null;
   delivery_fee: number;
   min_order: number;
   is_open: boolean;
@@ -24,7 +26,8 @@ async function chargerBoutique(slug: string) {
   const { data } = await supabase
     .from("shops")
     .select(
-      `id, name, slug, description, delivery_fee, min_order, is_open, address,
+      `id, name, slug, description, logo_url, cover_url,
+       delivery_fee, min_order, is_open, address,
        categories (id, name, position),
        products (
          id, name, description, price, image_url, is_available, category_id, position,
@@ -101,6 +104,8 @@ export default async function BoutiquePage({ params }: PageProps<"/[slug]">) {
     name: boutique.name,
     slug: boutique.slug,
     description: boutique.description,
+    logo_url: boutique.logo_url,
+    cover_url: boutique.cover_url,
     delivery_fee: Number(boutique.delivery_fee),
     min_order: Number(boutique.min_order),
     is_open: boutique.is_open,

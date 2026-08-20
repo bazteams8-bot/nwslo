@@ -8,7 +8,7 @@ import { deleteCategory, moveCategory, renameCategory } from "./actions";
 export const metadata: Metadata = { title: "Menu — Nwslo" };
 
 const BOUTON_ICONE =
-  "rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30";
+  "rounded-lg border border-bord px-2 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce disabled:cursor-not-allowed disabled:opacity-30";
 
 export default async function MenuPage() {
   const { shop, supabase } = await getMyShop();
@@ -25,31 +25,31 @@ export default async function MenuPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Menu</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold text-charbon">Menu</h1>
+        <p className="mt-1 text-sm text-ardoise-clair">
           Organisez votre carte en categories, puis ajoutez-y vos produits.
         </p>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-3 font-medium text-slate-900">
+      <section className="rounded-xl border border-bord bg-white p-5">
+        <h2 className="mb-3 font-medium text-charbon">
           Nouvelle categorie
         </h2>
         <AddCategoryForm />
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white">
-        <h2 className="border-b border-slate-200 px-5 py-3 font-medium text-slate-900">
+      <section className="rounded-xl border border-bord bg-white">
+        <h2 className="border-b border-bord px-5 py-3 font-medium text-charbon">
           Vos categories{liste.length > 0 ? ` (${liste.length})` : ""}
         </h2>
 
         {liste.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-slate-500">
+          <p className="px-5 py-8 text-center text-sm text-ardoise-clair">
             Aucune categorie pour l&apos;instant. Commencez par en creer une
             ci-dessus.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-bord">
             {liste.map((categorie, index) => (
               <li
                 key={categorie.id}
@@ -65,11 +65,11 @@ export default async function MenuPage() {
                     defaultValue={categorie.name}
                     maxLength={60}
                     required
-                    className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-slate-900 outline-none transition hover:border-slate-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                    className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-charbon outline-none transition hover:border-bord focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-terracotta/20"
                   />
                   <button
                     type="submit"
-                    className="rounded-lg px-2 py-1.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+                    className="rounded-lg px-2 py-1.5 text-sm font-medium text-terracotta-fonce transition hover:bg-terracotta-pale"
                   >
                     Enregistrer
                   </button>
@@ -106,7 +106,7 @@ export default async function MenuPage() {
                     <input type="hidden" name="id" value={categorie.id} />
                     <ConfirmButton
                       question={`Supprimer la categorie « ${categorie.name} » ? Les produits qu'elle contient seront conserves, mais sans categorie.`}
-                      className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
+                      className="rounded-lg border border-bord px-2 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
                     >
                       Supprimer
                     </ConfirmButton>

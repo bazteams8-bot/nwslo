@@ -57,22 +57,22 @@ export default async function OptionsPage({
       <div>
         <Link
           href="/dashboard/produits"
-          className="text-sm text-slate-500 hover:text-emerald-700"
+          className="text-sm text-ardoise-clair hover:text-terracotta-fonce"
         >
           ← Produits
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+        <h1 className="mt-2 text-2xl font-semibold text-charbon">
           Options de « {produit.name} »
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ardoise-clair">
           Prix de base {Number(produit.price).toFixed(2)} DH. Les
           supplements s&apos;y ajoutent.
         </p>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-3 font-medium text-slate-900">Nouveau groupe</h2>
-        <p className="mb-3 text-sm text-slate-500">
+      <section className="rounded-xl border border-bord bg-white p-5">
+        <h2 className="mb-3 font-medium text-charbon">Nouveau groupe</h2>
+        <p className="mb-3 text-sm text-ardoise-clair">
           Un groupe rassemble des choix du meme genre : une taille, des
           supplements, une sauce.
         </p>
@@ -80,8 +80,8 @@ export default async function OptionsPage({
       </section>
 
       {(groupes ?? []).length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-bord bg-white p-8 text-center">
+          <p className="text-sm text-ardoise-clair">
             Ce produit n&apos;a aucune option. C&apos;est tres bien pour une
             canette ; ajoutez-en si le client doit choisir quelque chose.
           </p>
@@ -93,19 +93,19 @@ export default async function OptionsPage({
           return (
             <section
               key={groupe.id}
-              className="rounded-xl border border-slate-200 bg-white"
+              className="rounded-xl border border-bord bg-white"
             >
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bord px-5 py-3">
                 <div>
-                  <h2 className="font-medium text-slate-900">{groupe.name}</h2>
-                  <p className="text-xs text-slate-500">{resume(groupe)}</p>
+                  <h2 className="font-medium text-charbon">{groupe.name}</h2>
+                  <p className="text-xs text-ardoise-clair">{resume(groupe)}</p>
                 </div>
                 <form action={deleteGroup}>
                   <input type="hidden" name="id" value={groupe.id} />
                   <input type="hidden" name="product_id" value={produit.id} />
                   <ConfirmButton
                     question={`Supprimer le groupe « ${groupe.name} » et ses ${siens.length} choix ?`}
-                    className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
+                    className="rounded-lg border border-bord px-2.5 py-1.5 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
                   >
                     Supprimer le groupe
                   </ConfirmButton>
@@ -113,16 +113,16 @@ export default async function OptionsPage({
               </div>
 
               {siens.length > 0 ? (
-                <ul className="divide-y divide-slate-200">
+                <ul className="divide-y divide-bord">
                   {siens.map((c) => (
                     <li
                       key={c.id}
                       className="flex items-center gap-3 px-5 py-2.5"
                     >
-                      <span className="min-w-0 flex-1 truncate text-slate-900">
+                      <span className="min-w-0 flex-1 truncate text-charbon">
                         {c.name}
                       </span>
-                      <span className="text-sm text-slate-600">
+                      <span className="text-sm text-ardoise">
                         {Number(c.price_delta) === 0
                           ? "inclus"
                           : `+${Number(c.price_delta).toFixed(2)} DH`}
@@ -137,7 +137,7 @@ export default async function OptionsPage({
                         <button
                           type="submit"
                           aria-label={`Supprimer ${c.name}`}
-                          className="rounded-lg border border-slate-300 px-2 py-1 text-sm text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                          className="rounded-lg border border-bord px-2 py-1 text-sm text-ardoise-clair transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                         >
                           ✕
                         </button>
@@ -147,7 +147,7 @@ export default async function OptionsPage({
                 </ul>
               ) : null}
 
-              <div className="border-t border-slate-200 px-5 py-3">
+              <div className="border-t border-bord px-5 py-3">
                 <AddItemForm productId={produit.id} groupId={groupe.id} />
               </div>
             </section>

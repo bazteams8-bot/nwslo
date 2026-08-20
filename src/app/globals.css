@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
+/*
+  Palette Nwslo.
+
+  La terracotta remplace le vert : le vert evoque le frais et le sain,
+  pas la nourriture qu'on vend ici. Le fond est creme plutot que blanc
+  pur — le blanc franc durcit le contraste des photos de plats.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffdf9;
+  --foreground: #2c2c2a;
+
+  --creme: #fffdf9;
+  --creme-fonce: #f7f4ec;
+  --bord: #e8e4da;
+
+  --terracotta: #d85a30;
+  --terracotta-fonce: #b8481f;
+  --terracotta-pale: #faece7;
+
+  --charbon: #2c2c2a;
+  --ardoise: #5f5e5a;
+  --ardoise-clair: #8f8d85;
+
+  --vert-doux: #e1f5ee;
+  --vert-fonce: #0f6e56;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-creme: var(--creme);
+  --color-creme-fonce: var(--creme-fonce);
+  --color-bord: var(--bord);
+
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-fonce: var(--terracotta-fonce);
+  --color-terracotta-pale: var(--terracotta-pale);
+
+  --color-charbon: var(--charbon);
+  --color-ardoise: var(--ardoise);
+  --color-ardoise-clair: var(--ardoise-clair);
+
+  --color-vert-doux: var(--vert-doux);
+  --color-vert-fonce: var(--vert-fonce);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Les categories defilent horizontalement : la barre de defilement
+   n'apporte rien et coupe la ligne en deux. */
+.defilement-discret {
+  scrollbar-width: none;
+}
+.defilement-discret::-webkit-scrollbar {
+  display: none;
 }

@@ -26,8 +26,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{shop.name}</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold text-charbon">{shop.name}</h1>
+        <p className="mt-1 text-sm text-ardoise-clair">
           {shop.is_open ? "Ouvert" : "Ferme"} ·{" "}
           {shop.delivery_fee > 0
             ? `livraison ${Number(shop.delivery_fee).toFixed(2)} DH`
@@ -46,24 +46,24 @@ export default async function DashboardPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl border border-slate-200 bg-white p-4"
+            className="rounded-xl border border-bord bg-white p-4"
           >
-            <dt className="text-sm text-slate-500">{stat.label}</dt>
-            <dd className="mt-1 text-2xl font-semibold text-slate-900">
+            <dt className="text-sm text-ardoise-clair">{stat.label}</dt>
+            <dd className="mt-1 text-2xl font-semibold text-charbon">
               {stat.value}
             </dd>
           </div>
         ))}
       </dl>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="font-medium text-slate-900">Votre lien de commande</h2>
-        <p className="mt-1 text-sm text-slate-500">
+      <div className="rounded-xl border border-bord bg-white p-5">
+        <h2 className="font-medium text-charbon">Votre lien de commande</h2>
+        <p className="mt-1 text-sm text-ardoise-clair">
           C&apos;est l&apos;adresse a partager avec vos clients.
         </p>
         <Link
           href={`/${shop.slug}`}
-          className="mt-3 inline-block rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm text-emerald-700 transition hover:bg-slate-50"
+          className="mt-3 inline-block rounded-lg border border-bord px-3 py-2 font-mono text-sm text-terracotta-fonce transition hover:bg-creme"
         >
           /{shop.slug}
         </Link>
