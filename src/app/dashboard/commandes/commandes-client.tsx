@@ -119,7 +119,9 @@ export function CommandesClient({
   const router = useRouter();
   const { activer, jouer } = useBip();
   const [sonActif, setSonActif] = useState(false);
-  const [connecte, setConnecte] = useState(false);
+  // On garde le statut brut du canal : « connecte / pas connecte »
+  // cachait la difference entre une connexion en cours et une erreur.
+  const [etat, setEtat] = useState<string>("CONNECTING");
   const [ouverte, setOuverte] = useState<string | null>(
     commandes.find((c) => c.status === "new")?.id ?? null,
   );
@@ -129,30 +131,80 @@ export function CommandesClient({
 
   useEffect(() => {
     const supabase = createClient();
+    let canal: ReturnType<typeof supabase.channel> | null = null;
+    let annule = false;
 
-    const canal = supabase
-      .channel(`commandes-${shopId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "orders",
-          filter: `shop_id=eq.${shopId}`,
-        },
-        () => {
-          if (sonActifRef.current) jouer();
-          // Le rendu serveur est refait : la nouvelle commande arrive
-          // avec ses lignes et ses options, que l'evenement ne porte pas.
-          router.refresh();
-        },
-      )
-      .subscribe((statut) => setConnecte(statut === "SUBSCRIBED"));
+    (async () => {
+      // Le socket Realtime doit porter le jeton de l'utilisateur.
+      // Sans lui il se connecte en anonyme : RLS ne laisse alors passer
+      // aucune commande, et l'abonnement reste muet tout en se
+      // declarant « connecte ». C'est silencieux, donc trompeur.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (annule) return;
+
+      if (session?.access_token) {
+        await supabase.realtime.setAuth(session.access_token);
+      }
+
+      canal = supabase
+        .channel(`commandes-${shopId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "orders",
+            filter: `shop_id=eq.${shopId}`,
+          },
+          () => {
+            // On se contente de rafraichir : l'evenement ne porte ni
+            // les lignes ni les options. Le bip est declenche plus bas,
+            // en comparant les listes, pour sonner aussi quand c'est le
+            // filet de securite qui a ramene la commande.
+            router.refresh();
+          },
+        )
+        .subscribe((statut) => setEtat(statut));
+    })();
 
     return () => {
-      supabase.removeChannel(canal);
+      annule = true;
+      if (canal) supabase.removeChannel(canal);
     };
   }, [shopId, router, jouer]);
+
+  // Filet de securite : si le temps reel ne s'etablit pas, on va
+  // chercher les commandes nous-memes. Un snack ne peut pas rater une
+  // commande parce qu'un websocket a echoue.
+  useEffect(() => {
+    if (etat === "SUBSCRIBED") return;
+    const minuteur = setInterval(() => router.refresh(), 15000);
+    return () => clearInterval(minuteur);
+  }, [etat, router]);
+
+  // Le bip suit la liste affichee, pas l'evenement : il sonne donc
+  // aussi bien pour le temps reel que pour le filet de securite, et
+  // une seule fois si les deux arrivent ensemble.
+  const dejaVues = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const ids = new Set(commandes.map((c) => c.id));
+
+    if (dejaVues.current === null) {
+      dejaVues.current = ids; // premier affichage : rien de « nouveau »
+      return;
+    }
+
+    const arrivees = commandes.filter((c) => !dejaVues.current!.has(c.id));
+    dejaVues.current = ids;
+
+    if (arrivees.length > 0) {
+      if (sonActifRef.current) jouer();
+      setOuverte(arrivees[0].id);
+    }
+  }, [commandes, jouer]);
 
   const nouvelles = commandes.filter((c) => c.status === "new").length;
 
@@ -165,10 +217,18 @@ export function CommandesClient({
             <span
               aria-hidden
               className={`inline-block size-2 rounded-full ${
-                connecte ? "bg-emerald-500" : "bg-slate-300"
+                etat === "SUBSCRIBED"
+                  ? "bg-emerald-500"
+                  : etat === "CONNECTING"
+                    ? "bg-slate-300"
+                    : "bg-red-500"
               }`}
             />
-            {connecte ? "En direct" : "Connexion..."}
+            {etat === "SUBSCRIBED"
+              ? "En direct"
+              : etat === "CONNECTING"
+                ? "Connexion..."
+                : `Temps reel indisponible (${etat})`}
             {nouvelles > 0 ? ` · ${nouvelles} nouvelle${nouvelles > 1 ? "s" : ""}` : ""}
           </p>
         </div>
