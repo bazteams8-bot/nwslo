@@ -16,8 +16,9 @@ export default async function CommandesPage() {
   const { data } = await supabase
     .from("orders")
     .select(
-      `id, order_number, customer_name, customer_phone, customer_address,
+      `id, order_number, customer_name, customer_phone, customer_address, customer_id,
        delivery_type, note, subtotal, delivery_fee, total, status, created_at,
+       customers (id, orders_count, no_show_count, is_blocked),
        order_items (
          id, product_name, unit_price, options_total, quantity, line_total, note,
          order_item_options (id, group_name, option_name, price_delta)
@@ -40,6 +41,19 @@ export default async function CommandesPage() {
     total: Number(c.total),
     status: c.status,
     created_at: c.created_at,
+    // La relation est typee comme une liste alors qu'il n'y a qu'un
+    // client par commande : on prend le premier.
+    client: (() => {
+      const fiche = Array.isArray(c.customers) ? c.customers[0] : c.customers;
+      return fiche
+        ? {
+            id: fiche.id,
+            commandes: fiche.orders_count,
+            absences: fiche.no_show_count,
+            bloque: fiche.is_blocked,
+          }
+        : null;
+    })(),
     items: (c.order_items ?? []).map((i) => ({
       id: i.id,
       product_name: i.product_name,

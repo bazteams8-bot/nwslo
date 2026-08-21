@@ -13,6 +13,12 @@ import {
   type LignePanier,
 } from "@/lib/cart";
 import { lienWhatsapp, messageCommande } from "@/lib/whatsapp";
+import {
+  ecrireProfil,
+  identifiantAppareil,
+  lireProfil,
+  type ProfilClient,
+} from "@/lib/client-local";
 
 type Boutique = {
   id: string;
@@ -49,6 +55,12 @@ function messageLisible(code: string): string {
       return "Indiquez une adresse de livraison.";
     case "QUANTITE_INVALIDE":
       return "Quantite invalide.";
+    case "CLIENT_BLOQUE":
+      return "Ce snack ne prend plus de commandes de ce numero. Contactez-le directement.";
+    case "TROP_DE_COMMANDES_EN_COURS":
+      return "Vous avez deja deux commandes en cours chez ce snack. Attendez qu'elles soient servies.";
+    case "TROP_DE_COMMANDES":
+      return "Trop de commandes depuis cet appareil. Reessayez dans une heure.";
     default:
       return "La commande n'a pas pu etre enregistree. Reessayez.";
   }
@@ -61,9 +73,11 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [confirme, setConfirme] = useState<Confirmation | null>(null);
+  const [profil, setProfil] = useState<ProfilClient | null>(null);
 
   useEffect(() => {
     setLignes(lirePanier(shop.id));
+    setProfil(lireProfil());
     setPret(true);
   }, [shop.id]);
 
@@ -97,6 +111,10 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
         quantity: l.quantite,
         option_item_ids: l.choix.map((c) => c.itemId),
       })),
+      // Sert a plafonner les commandes d'un meme appareil. Un
+      // navigateur vide en produit un neuf : c'est un ralentisseur,
+      // pas une preuve d'identite.
+      p_device_id: identifiantAppareil() || null,
     });
 
     if (error) {
@@ -125,6 +143,10 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
     // meme si le client n'envoie jamais le message WhatsApp.
     ecrirePanier(shop.id, []);
     setLignes([]);
+
+    // Retenu sur cet appareil seulement, pour que la prochaine commande
+    // se resume a valider.
+    ecrireProfil({ nom, telephone, adresse });
 
     setConfirme({
       numero: resultat.order_number,
@@ -168,7 +190,18 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
     );
   }
 
-  if (pret && lignes.length === 0) {
+  // Le panier et le profil viennent du navigateur, donc apres le
+  // premier rendu. On attend : `defaultValue` ne se relit pas, et un
+  // formulaire affiche trop tot resterait vide.
+  if (!pret) {
+    return (
+      <div className="mx-auto flex min-h-full max-w-md flex-1 items-center justify-center px-4 py-12">
+        <p className="text-ardoise">Un instant...</p>
+      </div>
+    );
+  }
+
+  if (lignes.length === 0) {
     return (
       <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
         <h1 className="text-xl font-semibold text-charbon">
@@ -263,6 +296,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
           </span>
           <input
             name="name"
+            defaultValue={profil?.nom ?? ""}
             required
             minLength={2}
             maxLength={80}
@@ -276,6 +310,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
           </span>
           <input
             name="phone"
+            defaultValue={profil?.telephone ?? ""}
             type="tel"
             required
             placeholder="0612345678"
@@ -290,6 +325,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
             </span>
             <textarea
               name="address"
+              defaultValue={profil?.adresse ?? ""}
               required
               rows={2}
               placeholder="Rue, quartier, etage..."

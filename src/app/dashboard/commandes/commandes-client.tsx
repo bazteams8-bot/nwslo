@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formaterDh } from "@/lib/cart";
-import { updateStatus, type Statut } from "./actions";
+import { toggleCustomerBlock, updateStatus, type Statut } from "./actions";
 
 export type Commande = {
   id: string;
@@ -19,6 +19,12 @@ export type Commande = {
   total: number;
   status: Statut;
   created_at: string;
+  client: {
+    id: string;
+    commandes: number;
+    absences: number;
+    bloque: boolean;
+  } | null;
   items: {
     id: string;
     product_name: string;
@@ -39,6 +45,7 @@ const LIBELLE: Record<Statut, string> = {
   preparing: "En preparation",
   ready: "Prete",
   delivered: "Livree",
+  no_show: "Non recuperee",
   cancelled: "Annulee",
 };
 
@@ -47,6 +54,7 @@ const COULEUR: Record<Statut, string> = {
   preparing: "bg-amber-100 text-amber-800",
   ready: "bg-sky-100 text-sky-800",
   delivered: "bg-creme-fonce text-ardoise",
+  no_show: "bg-amber-100 text-amber-800",
   cancelled: "bg-red-100 text-red-700",
 };
 
@@ -403,6 +411,26 @@ export function CommandesClient({
                           Note : {commande.note}
                         </p>
                       ) : null}
+
+                      {commande.client ? (
+                        <p
+                          className={
+                            commande.client.absences > 0
+                              ? "text-red-700"
+                              : "text-ardoise-clair"
+                          }
+                        >
+                          {commande.client.commandes === 1
+                            ? "Premiere commande"
+                            : `${commande.client.commandes}e commande`}
+                          {commande.client.absences > 0
+                            ? ` · ${commande.client.absences} non recuperee${
+                                commande.client.absences > 1 ? "s" : ""
+                              }`
+                            : ""}
+                          {commande.client.bloque ? " · numero bloque" : ""}
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -433,6 +461,57 @@ export function CommandesClient({
                             className="rounded-lg border border-bord px-4 py-2 text-sm text-red-600 transition hover:border-red-200 hover:bg-red-50"
                           >
                             Annuler
+                          </button>
+                        </form>
+                      ) : null}
+
+                      {commande.status !== "cancelled" &&
+                      commande.status !== "no_show" ? (
+                        <form action={updateStatus}>
+                          <input type="hidden" name="id" value={commande.id} />
+                          <input type="hidden" name="status" value="no_show" />
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-bord px-4 py-2 text-sm text-amber-800 transition hover:border-amber-200 hover:bg-amber-50"
+                          >
+                            Non recuperee
+                          </button>
+                        </form>
+                      ) : null}
+
+                      {commande.client ? (
+                        <form action={toggleCustomerBlock}>
+                          <input
+                            type="hidden"
+                            name="customer_id"
+                            value={commande.client.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="blocked"
+                            value={String(commande.client.bloque)}
+                          />
+                          <button
+                            type="submit"
+                            onClick={(e) => {
+                              if (
+                                !commande.client!.bloque &&
+                                !window.confirm(
+                                  `Bloquer ${commande.customer_phone} ? Ce numero et cet appareil ne pourront plus commander chez vous.`,
+                                )
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className={`rounded-lg border border-bord px-4 py-2 text-sm transition ${
+                              commande.client.bloque
+                                ? "text-vert-fonce hover:bg-vert-doux"
+                                : "text-red-600 hover:border-red-200 hover:bg-red-50"
+                            }`}
+                          >
+                            {commande.client.bloque
+                              ? "Debloquer"
+                              : "Bloquer ce numero"}
                           </button>
                         </form>
                       ) : null}
