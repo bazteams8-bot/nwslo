@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import { selectShop } from "./selection";
 
@@ -17,6 +18,7 @@ export function SelecteurBoutique({
   courante: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const chemin = usePathname();
 
   if (shops.length < 2) return null;
 
@@ -28,12 +30,17 @@ export function SelecteurBoutique({
 
   return (
     <form ref={formRef} action={selectShop}>
+      {/* On revient sur la page en cours : changer de snack depuis les
+          commandes ne doit pas ramener a l'accueil. */}
+      <input type="hidden" name="chemin" value={chemin} />
+
       <label className="sr-only" htmlFor="shop_id">
         Snack affiche
       </label>
       <select
         id="shop_id"
         name="shop_id"
+        key={courante}
         defaultValue={courante}
         onChange={() => formRef.current?.requestSubmit()}
         className="rounded-lg border border-bord bg-white px-3 py-1.5 text-sm font-medium text-charbon outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"

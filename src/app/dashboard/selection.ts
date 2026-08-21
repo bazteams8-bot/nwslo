@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { COOKIE_BOUTIQUE_NOM, getMyShops } from "@/lib/auth";
 
 /**
@@ -13,6 +13,8 @@ import { COOKIE_BOUTIQUE_NOM, getMyShops } from "@/lib/auth";
  */
 export async function selectShop(formData: FormData): Promise<void> {
   const id = String(formData.get("shop_id") ?? "");
+  const retour = String(formData.get("chemin") ?? "/dashboard");
+
   if (!id) return;
 
   const { shops } = await getMyShops();
@@ -26,5 +28,8 @@ export async function selectShop(formData: FormData): Promise<void> {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  revalidatePath("/dashboard", "layout");
+  // Une redirection plutot qu'une revalidation : le cookie ne vaut qu'a
+  // partir de la requete suivante, et revalider ici rejouerait la page
+  // avec l'ancienne valeur.
+  redirect(retour.startsWith("/dashboard") ? retour : "/dashboard");
 }
