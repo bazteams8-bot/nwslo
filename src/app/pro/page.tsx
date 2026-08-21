@@ -4,7 +4,7 @@ import { PLANS } from "@/lib/plans";
 
 const TITRE = "Nwslo pour les snacks — vos commandes sans commission";
 const DESCRIPTION =
-  "Une page de commande a votre nom, un QR code sur le comptoir, et les commandes sur WhatsApp. Installation comprise.";
+  "Une page de commande a votre nom, un QR code sur le comptoir, et les commandes qui arrivent en direct avec une alerte. Installation comprise.";
 
 export const metadata: Metadata = {
   title: TITRE,
@@ -35,7 +35,7 @@ const ETAPES = [
   {
     titre: "Les commandes arrivent",
     texte:
-      "Sur WhatsApp et sur votre tableau de bord, avec une sonnerie. Vous preparez, le client vient chercher ou vous livrez.",
+      "Sur votre tableau de bord, avec une sonnerie et une notification meme si le navigateur est reduit. Vous preparez, le client vient chercher ou vous livrez.",
   },
 ];
 
@@ -68,14 +68,14 @@ const ATOUTS = [
   {
     titre: "Vous ne ratez rien",
     texte:
-      "Chaque commande est enregistree, meme si le client ferme WhatsApp en cours de route.",
+      "Chaque commande est enregistree des que le client valide, et vous alerte aussitot.",
   },
 ];
 
 const QUESTIONS = [
   {
     q: "Il me faut un site ou une application ?",
-    r: "Non. Vous recevez une page prete, a votre nom, avec un QR code a imprimer. Vos clients l'ouvrent depuis WhatsApp ou en scannant le code.",
+    r: "Non. Vous recevez une page prete, a votre nom, avec un QR code a imprimer. Vos clients l'ouvrent depuis le lien que vous partagez ou en scannant le code.",
   },
   {
     q: "Et si je ne sais pas me servir d'un ordinateur ?",
@@ -83,7 +83,7 @@ const QUESTIONS = [
   },
   {
     q: "Comment je recois les commandes ?",
-    r: "Le client remplit son nom, son telephone et son adresse, puis valide. La commande arrive sur votre tableau de bord avec une sonnerie, et un message WhatsApp pre-rempli s'ouvre chez lui.",
+    r: "Le client remplit son nom, son telephone et son adresse, puis valide. La commande arrive aussitot sur votre tableau de bord, avec une sonnerie et une notification. Le client peut vous ecrire sur WhatsApp s'il a une question.",
   },
   {
     q: "Je peux arreter quand je veux ?",
@@ -127,7 +127,7 @@ export default function Home() {
 
         <p className="mx-auto mt-5 max-w-xl text-lg text-ardoise">
           Une page de commande a votre nom, un QR code sur le comptoir, et les
-          commandes qui arrivent sur WhatsApp. Vous gardez vos marges et vos
+          commandes qui arrivent en direct. Vous gardez vos marges et vos
           clients.
         </p>
 
@@ -286,7 +286,7 @@ export default function Home() {
                     {[
                       "Page de commande a votre nom",
                       "Menu avec photos et options",
-                      "Commandes sur WhatsApp",
+                      "Alerte a chaque commande",
                       "QR code a imprimer",
                       "Installation comprise",
                     ].map((ligne) => (

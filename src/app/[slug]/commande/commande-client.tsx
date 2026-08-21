@@ -12,7 +12,7 @@ import {
   totalLigne,
   type LignePanier,
 } from "@/lib/cart";
-import { lienWhatsapp, messageCommande } from "@/lib/whatsapp";
+import { lienWhatsapp, messageContact } from "@/lib/whatsapp";
 import {
   ecrireProfil,
   identifiantAppareil,
@@ -125,22 +125,12 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
 
     const resultat = Array.isArray(data) ? data[0] : data;
 
-    const message = messageCommande({
-      numeroCommande: resultat.order_number,
-      nomBoutique: shop.name,
-      lignes,
-      sousTotal: total,
-      fraisLivraison: frais,
-      total: Number(resultat.order_total),
-      client: nom,
-      telephone,
-      adresse: livraison ? adresse : null,
-      livraison,
-      note: note || null,
-    });
+    // Le snack a deja la commande, en direct et avec une alerte : le
+    // message WhatsApp ne sert plus a la transmettre, seulement a lui
+    // parler. D'ou un mot court plutot que tout le detail recopie.
+    const message = messageContact(resultat.order_number, nom);
 
-    // La commande est enregistree : le panier n'a plus lieu d'etre,
-    // meme si le client n'envoie jamais le message WhatsApp.
+    // Le panier n'a plus lieu d'etre.
     ecrirePanier(shop.id, []);
     setLignes([]);
 
@@ -160,29 +150,36 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
       <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
         <p className="text-5xl">✅</p>
         <h1 className="mt-4 text-2xl font-bold text-charbon">
-          Commande #{confirme.numero} enregistree
+          Commande #{confirme.numero} confirmee
         </h1>
+
+        {/* La commande est arrivee chez le snack : plus rien n'est
+            demande au client. WhatsApp n'est la que s'il veut parler. */}
         <p className="mt-2 text-ardoise">
-          {shop.name} la voit deja. Envoyez le message pour confirmer et
-          suivre avec le snack.
+          {shop.name} l&apos;a recue et commence a preparer.
         </p>
+
+        <div className="mt-6 rounded-2xl border border-bord bg-white p-5">
+          <p className="text-sm text-ardoise">
+            {livraison ? "A payer a la livraison" : "A payer sur place"}
+          </p>
+          <p className="mt-1 text-3xl font-bold text-charbon">
+            {formaterDh(confirme.total)}
+          </p>
+        </div>
 
         <a
           href={confirme.lien}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 rounded-lg bg-terracotta px-5 py-3.5 font-medium text-white transition hover:bg-terracotta-fonce"
+          className="mt-6 rounded-lg border border-bord bg-white px-5 py-3 font-medium text-charbon transition hover:bg-creme-fonce"
         >
-          Envoyer sur WhatsApp
+          Contacter le snack sur WhatsApp
         </a>
-
-        <p className="mt-3 text-sm text-ardoise-clair">
-          Total a payer : {formaterDh(confirme.total)}
-        </p>
 
         <Link
           href={`/${shop.slug}`}
-          className="mt-6 text-sm text-ardoise-clair hover:text-terracotta-fonce"
+          className="mt-4 text-sm text-ardoise-clair hover:text-terracotta-fonce"
         >
           Retour au menu
         </Link>
