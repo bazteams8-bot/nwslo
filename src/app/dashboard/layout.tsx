@@ -62,7 +62,7 @@ export default async function DashboardLayout({
 
           <div className="flex items-center gap-3">
             <SelecteurBoutique
-              shops={shops.map((s) => ({ id: s.id, name: s.name }))}
+              shops={shops.map((s) => ({ id: s.id, name: s.name, slug: s.slug }))}
               courante={shop?.id ?? ""}
             />
             <span className="hidden text-sm text-ardoise-clair sm:inline">

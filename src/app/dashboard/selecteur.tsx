@@ -13,12 +13,18 @@ export function SelecteurBoutique({
   shops,
   courante,
 }: {
-  shops: { id: string; name: string }[];
+  shops: { id: string; name: string; slug: string }[];
   courante: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   if (shops.length < 2) return null;
+
+  // Deux succursales portent souvent le meme nom. Sans l'adresse, la
+  // liste afficherait deux lignes identiques et le gerant ne saurait
+  // pas laquelle il ouvre.
+  const noms = new Map<string, number>();
+  for (const s of shops) noms.set(s.name, (noms.get(s.name) ?? 0) + 1);
 
   return (
     <form ref={formRef} action={selectShop}>
@@ -34,7 +40,7 @@ export function SelecteurBoutique({
       >
         {shops.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.name}
+            {(noms.get(s.name) ?? 0) > 1 ? `${s.name} — /${s.slug}` : s.name}
           </option>
         ))}
       </select>
