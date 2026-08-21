@@ -1,5 +1,25 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { PLANS } from "@/lib/plans";
+
+const TITRE = "Nwslo pour les snacks — vos commandes sans commission";
+const DESCRIPTION =
+  "Une page de commande a votre nom, un QR code sur le comptoir, et les commandes sur WhatsApp. Installation comprise.";
+
+export const metadata: Metadata = {
+  title: TITRE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/pro" },
+  openGraph: {
+    type: "website",
+    locale: "fr_MA",
+    siteName: "Nwslo",
+    url: "/pro",
+    title: TITRE,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary", title: TITRE, description: DESCRIPTION },
+};
 
 const ETAPES = [
   {

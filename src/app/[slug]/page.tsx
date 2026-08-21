@@ -52,10 +52,42 @@ export async function generateMetadata({
 
   if (!boutique) return { title: "Snack introuvable — Nwslo" };
 
+  const titre = `${boutique.name} — commander`;
+  const description =
+    boutique.description ?? `Commandez chez ${boutique.name} sur Nwslo.`;
+
+  // La couverture, sinon le logo. C'est cette image que WhatsApp
+  // affiche quand le lien est partage — et ce lien est partage a chaque
+  // commande, donc c'est la vitrine du snack plus que la page elle-meme.
+  //
+  // Elle passe par l'optimiseur d'images : nos fichiers sont en WebP,
+  // que les robots d'apercu ne savent pas tous lire. L'optimiseur rend
+  // du JPEG a qui ne demande pas explicitement du WebP, ce qui est le
+  // cas des robots.
+  const source = boutique.cover_url ?? boutique.logo_url;
+  const image = source
+    ? `/_next/image?url=${encodeURIComponent(source)}&w=1200&q=75`
+    : null;
+
   return {
-    title: `${boutique.name} — commander`,
-    description:
-      boutique.description ?? `Commandez chez ${boutique.name} sur Nwslo.`,
+    title: titre,
+    description,
+    alternates: { canonical: `/${boutique.slug}` },
+    openGraph: {
+      type: "website",
+      locale: "fr_MA",
+      siteName: "Nwslo",
+      url: `/${boutique.slug}`,
+      title: titre,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: titre,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 

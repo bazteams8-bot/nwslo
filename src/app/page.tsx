@@ -3,10 +3,23 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Annuaire, type Snack } from "./annuaire";
 
+const TITRE = "Nwslo — commander dans les snacks pres de chez vous";
+const DESCRIPTION =
+  "Parcourez les snacks en ligne, choisissez vos plats et commandez en quelques minutes.";
+
 export const metadata: Metadata = {
-  title: "Nwslo — commander dans les snacks pres de chez vous",
-  description:
-    "Parcourez les snacks en ligne, choisissez vos plats et commandez en quelques minutes.",
+  title: TITRE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_MA",
+    siteName: "Nwslo",
+    url: "/",
+    title: TITRE,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary", title: TITRE, description: DESCRIPTION },
 };
 
 // Un snack qui vient d'ouvrir doit apparaitre tout de suite.
