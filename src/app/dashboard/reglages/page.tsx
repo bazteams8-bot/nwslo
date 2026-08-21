@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getMyShop } from "@/lib/auth";
 import { SettingsForm } from "./settings-form";
+import { PasswordForm } from "./password-form";
 
 export const metadata: Metadata = { title: "Reglages — Nwslo" };
 
@@ -38,6 +39,15 @@ export default async function ReglagesPage() {
           cover_url: shop.cover_url,
         }}
       />
+
+      <section className="mt-6 rounded-2xl border border-bord bg-white p-5">
+        <h2 className="mb-1 font-medium text-charbon">Mot de passe</h2>
+        <p className="mb-4 text-sm text-ardoise">
+          Changez-le si quelqu&apos;un d&apos;autre a connu le mot de passe
+          qui vous a ete remis.
+        </p>
+        <PasswordForm />
+      </section>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getMyShop } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { cheminDepuisUrl } from "@/lib/images";
 
 export type ReglagesState = { error: string | null; notice: string | null };
@@ -86,4 +87,53 @@ export async function saveShop(
   revalidatePath(`/${shop.slug}`);
 
   return { ...VIDE, notice: "Enregistre." };
+}
+
+export async function changePassword(
+  _prev: ReglagesState,
+  formData: FormData,
+): Promise<ReglagesState> {
+  const actuel = String(formData.get("current_password") ?? "");
+  const nouveau = String(formData.get("new_password") ?? "");
+  const confirmation = String(formData.get("confirm_password") ?? "");
+
+  if (nouveau.length < 8) {
+    return { ...VIDE, error: "Le nouveau mot de passe doit faire au moins 8 caracteres." };
+  }
+  if (nouveau !== confirmation) {
+    return { ...VIDE, error: "Les deux mots de passe ne correspondent pas." };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return { ...VIDE, error: "Session expiree. Reconnectez-vous." };
+  }
+
+  // On revalide le mot de passe actuel avant de le remplacer. Supabase
+  // ne l'exige pas : sans ce controle, quelqu'un passant devant un
+  // ecran reste connecte pourrait verrouiller le gerant hors de son
+  // propre compte.
+  const { error: erreurActuel } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: actuel,
+  });
+
+  if (erreurActuel) {
+    return { ...VIDE, error: "Mot de passe actuel incorrect." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: nouveau });
+
+  if (error) {
+    return {
+      ...VIDE,
+      error: /different from the old/i.test(error.message)
+        ? "Le nouveau mot de passe doit etre different de l'ancien."
+        : "Impossible de changer le mot de passe. Reessayez.",
+    };
+  }
+
+  return { ...VIDE, notice: "Mot de passe modifie." };
 }
