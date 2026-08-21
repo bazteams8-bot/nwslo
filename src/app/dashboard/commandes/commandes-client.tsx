@@ -142,6 +142,41 @@ function useCarillon() {
   return { activer, jouer };
 }
 
+/**
+ * Notifications du systeme.
+ *
+ * Le carillon ne s'entend que si la page est ouverte. Une notification
+ * arrive meme navigateur reduit, ce qui est l'etat normal d'un snack en
+ * plein service.
+ */
+function useNotifications() {
+  const autorise = useRef(false);
+
+  const demander = useCallback(async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+
+    // Doit partir d'un clic : les navigateurs refusent la demande
+    // autrement, et la refusent definitivement si on insiste.
+    const reponse = await Notification.requestPermission();
+    autorise.current = reponse === "granted";
+  }, []);
+
+  const notifier = useCallback((titre: string, corps: string, cle: string) => {
+    if (!autorise.current) return;
+
+    try {
+      // Le tag evite d'empiler deux notifications pour une meme
+      // commande si la liste est rafraichie deux fois.
+      const notif = new Notification(titre, { body: corps, tag: cle });
+      notif.onclick = () => window.focus();
+    } catch {
+      // Permission revoquee entre-temps : le carillon reste.
+    }
+  }, []);
+
+  return { demander, notifier };
+}
+
 export function CommandesClient({
   shopId,
   commandes,
@@ -151,6 +186,7 @@ export function CommandesClient({
 }) {
   const router = useRouter();
   const { activer, jouer } = useCarillon();
+  const { demander, notifier } = useNotifications();
   const [sonActif, setSonActif] = useState(false);
   // On garde le statut brut du canal : « connecte / pas connecte »
   // cachait la difference entre une connexion en cours et une erreur.
@@ -236,8 +272,28 @@ export function CommandesClient({
     if (arrivees.length > 0) {
       if (sonActifRef.current) jouer();
       setOuverte(arrivees[0].id);
+
+      const premiere = arrivees[0];
+      notifier(
+        arrivees.length === 1
+          ? `Commande #${premiere.order_number}`
+          : `${arrivees.length} nouvelles commandes`,
+        arrivees.length === 1
+          ? `${premiere.customer_name} · ${formaterDh(premiere.total)}`
+          : "Ouvrez le tableau de bord pour les voir.",
+        premiere.id,
+      );
     }
-  }, [commandes, jouer]);
+  }, [commandes, jouer, notifier]);
+
+  // Le titre de l'onglet compte les commandes a traiter : visible dans
+  // la barre d'onglets sans que la page soit au premier plan.
+  useEffect(() => {
+    const enAttente = commandes.filter((c) => c.status === "new").length;
+    document.title = enAttente
+      ? `(${enAttente}) Commandes — Nwslo`
+      : "Commandes — Nwslo";
+  }, [commandes]);
 
   const nouvelles = commandes.filter((c) => c.status === "new").length;
 
@@ -270,18 +326,21 @@ export function CommandesClient({
           <button
             type="button"
             onClick={async () => {
+              // Les deux dans le meme clic : le son et les
+              // notifications exigent chacun un geste de l'utilisateur.
               await activer();
+              await demander();
               jouer();
               setSonActif(true);
             }}
             className="rounded-lg border border-bord px-4 py-2.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
           >
-            🔔 Activer le son
+            🔔 Activer les alertes
           </button>
         ) : (
           <div className="flex items-center gap-2">
             <span className="rounded-lg bg-terracotta-pale px-4 py-2.5 text-sm font-medium text-terracotta-fonce">
-              🔔 Son actif
+              🔔 Alertes actives
             </span>
             <button
               type="button"
@@ -296,9 +355,10 @@ export function CommandesClient({
 
       {!sonActif ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-          Activez le son pour etre prevenu des nouvelles commandes sans
-          regarder l&apos;ecran. Le navigateur exige un clic avant de
-          pouvoir jouer un son.
+          Activez les alertes pour etre prevenu sans regarder
+          l&apos;ecran : une sonnerie, et une notification qui arrive
+          meme si le navigateur est reduit. Le navigateur exige un clic
+          pour les autoriser.
         </p>
       ) : null}
 
