@@ -25,7 +25,7 @@ export default async function SignupPage({
         <p className="mb-6 rounded-lg border border-terracotta bg-terracotta-pale px-3 py-2.5 text-sm text-terracotta-fonce">
           Formule <strong>{PLANS[choisie].nom}</strong> —{" "}
           {PLANS[choisie].prix} DH par mois.{" "}
-          <Link href="/#tarifs" className="underline">
+          <Link href="/pro#tarifs" className="underline">
             changer
           </Link>
         </p>
