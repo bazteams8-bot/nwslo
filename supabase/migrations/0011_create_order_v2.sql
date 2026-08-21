@@ -79,7 +79,9 @@ begin
   end if;
 
   -- --- Plafonds --------------------------------------------------------
-  if public.commandes_ouvertes(p_shop_id, p_customer_phone) >= 2 then
+  -- Trois commandes ouvertes : de quoi rattraper un oubli, ou commander
+  -- pour plusieurs personnes, sans laisser un plaisantin en empiler dix.
+  if public.commandes_ouvertes(p_shop_id, p_customer_phone) >= 3 then
     raise exception 'TROP_DE_COMMANDES_EN_COURS';
   end if;
 

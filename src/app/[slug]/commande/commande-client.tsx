@@ -58,7 +58,7 @@ function messageLisible(code: string): string {
     case "CLIENT_BLOQUE":
       return "Ce snack ne prend plus de commandes de ce numero. Contactez-le directement.";
     case "TROP_DE_COMMANDES_EN_COURS":
-      return "Vous avez deja deux commandes en cours chez ce snack. Attendez qu'elles soient servies.";
+      return "Vous avez deja trois commandes en cours chez ce snack. Attendez qu'elles soient servies.";
     case "TROP_DE_COMMANDES":
       return "Trop de commandes depuis cet appareil. Reessayez dans une heure.";
     default:
