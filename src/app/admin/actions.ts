@@ -93,14 +93,30 @@ export async function createShopForClient(
       email_confirm: true,
     });
 
-  if (erreurCompte || !compte?.user) {
+  let proprietaire = compte?.user?.id ?? null;
+  // Vrai seulement pour un compte tout neuf : on ne remet pas de mot de
+  // passe a un gerant qui en a deja un.
+  let compteCree = Boolean(proprietaire);
+
+  if (erreurCompte || !proprietaire) {
     const message = (erreurCompte?.message ?? "").toLowerCase();
-    return {
-      ...VIDE,
-      error: message.includes("already")
-        ? "Un compte existe deja avec cet e-mail."
-        : "Impossible de creer le compte.",
-    };
+
+    if (!message.includes("already")) {
+      return { ...VIDE, error: "Impossible de creer le compte." };
+    }
+
+    // Deuxieme snack pour un gerant existant : on rattache la boutique
+    // a son compte plutot que de refuser.
+    const { data: comptes } = await admin.auth.admin.listUsers({
+      perPage: 200,
+    });
+    proprietaire =
+      comptes?.users.find((u) => u.email?.toLowerCase() === email)?.id ?? null;
+    compteCree = false;
+
+    if (!proprietaire) {
+      return { ...VIDE, error: "Un compte existe deja avec cet e-mail." };
+    }
   }
 
   const base = slugifier(nom) || "snack";
@@ -109,7 +125,7 @@ export async function createShopForClient(
     const slug = essai === 0 ? base : `${base}-${essai + 1}`;
 
     const { error } = await admin.from("shops").insert({
-      owner_id: compte.user.id,
+      owner_id: proprietaire,
       name: nom,
       slug,
       whatsapp_phone: phone,
@@ -125,19 +141,26 @@ export async function createShopForClient(
       revalidatePath("/admin");
       return {
         error: null,
-        identifiants: { email, motDePasse, lien: `/${slug}` },
+        identifiants: {
+          email,
+          // Un gerant existant garde son mot de passe : on ne le
+          // remplace pas parce qu'il ouvre un deuxieme snack.
+          motDePasse: compteCree ? motDePasse : "(inchange)",
+          lien: `/${slug}`,
+        },
       };
     }
 
     if (error.code !== "23505") {
-      // Le compte existe deja mais la boutique a echoue : on le retire
-      // pour ne pas laisser un compte orphelin qui bloquerait l'e-mail.
-      await admin.auth.admin.deleteUser(compte.user.id);
+      // Un compte qu'on vient de creer et dont la boutique a echoue
+      // bloquerait cet e-mail pour rien : on le retire. Un compte qui
+      // existait avant, en revanche, ne nous appartient pas.
+      if (compteCree) await admin.auth.admin.deleteUser(proprietaire);
       return { ...VIDE, error: "Impossible de creer le snack." };
     }
   }
 
-  await admin.auth.admin.deleteUser(compte.user.id);
+  if (compteCree) await admin.auth.admin.deleteUser(proprietaire);
   return { ...VIDE, error: "Ce nom est deja pris. Essayez-en un autre." };
 }
 

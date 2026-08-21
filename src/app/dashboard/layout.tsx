@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { getMyShop } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
+import { SelecteurBoutique } from "./selecteur";
 
 export default async function DashboardLayout({
   children,
 }: LayoutProps<"/dashboard">) {
   // Garde reelle : le proxy ne fait qu'une verification optimiste.
-  const { user } = await requireUser();
+  const { user, shop, shops } = await getMyShop();
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-creme">
@@ -59,7 +60,11 @@ export default async function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <SelecteurBoutique
+              shops={shops.map((s) => ({ id: s.id, name: s.name }))}
+              courante={shop?.id ?? ""}
+            />
             <span className="hidden text-sm text-ardoise-clair sm:inline">
               {user.email}
             </span>

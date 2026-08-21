@@ -1,5 +1,9 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+
+/** Cookie qui retient la boutique en cours quand le gerant en a plusieurs. */
+const COOKIE_BOUTIQUE = "nwslo-shop";
 
 /**
  * Renvoie l'utilisateur connecte, ou redirige vers la connexion.
@@ -18,20 +22,35 @@ export async function requireUser() {
   return { user, supabase };
 }
 
-/** La boutique de l'utilisateur connecte, ou `null` s'il n'en a pas. */
-export async function getMyShop() {
+/** Toutes les boutiques du gerant, la plus ancienne d'abord. */
+export async function getMyShops() {
   const { user, supabase } = await requireUser();
 
-  // `limit(1)` plutot que `maybeSingle()` : ce dernier leve une erreur
-  // si plusieurs lignes existent, et ferait tomber tout le tableau de
-  // bord au lieu d'en afficher une.
   const { data, error } = await supabase
     .from("shops")
     .select("*")
     .eq("owner_id", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1);
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
-  return { user, supabase, shop: data?.[0] ?? null };
+  return { user, supabase, shops: data ?? [] };
 }
+
+/**
+ * La boutique en cours.
+ *
+ * Un gerant peut avoir plusieurs snacks ; le cookie dit lequel il
+ * regarde. Sa valeur est verifiee contre la liste de ses boutiques :
+ * un cookie bricole ne donne acces a rien, il retombe sur la premiere.
+ */
+export async function getMyShop() {
+  const { user, supabase, shops } = await getMyShops();
+
+  const choisie = (await cookies()).get(COOKIE_BOUTIQUE)?.value;
+  const shop = shops.find((s) => s.id === choisie) ?? shops[0] ?? null;
+
+  return { user, supabase, shop, shops };
+}
+
+/** Le nom du cookie, pour l'action qui le pose. */
+export const COOKIE_BOUTIQUE_NOM = COOKIE_BOUTIQUE;
