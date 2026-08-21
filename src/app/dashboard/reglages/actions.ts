@@ -24,6 +24,7 @@ export async function saveShop(
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
   const phone = normaliserTelephone(String(formData.get("whatsapp") ?? ""));
   const ouvert = formData.get("is_open") === "on";
 
@@ -56,6 +57,7 @@ export async function saveShop(
       name,
       description: description || null,
       address: address || null,
+      city: city || null,
       whatsapp_phone: phone,
       delivery_fee: frais,
       min_order: minimum,

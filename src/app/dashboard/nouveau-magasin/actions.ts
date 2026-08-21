@@ -33,6 +33,7 @@ export async function createShop(
   const name = String(formData.get("name") ?? "").trim();
   const phone = normaliserTelephone(String(formData.get("whatsapp") ?? ""));
   const address = String(formData.get("address") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
   const feeRaw = String(formData.get("delivery_fee") ?? "0").replace(",", ".");
   const planBrut = String(formData.get("plan") ?? "");
   const plan: Plan = planBrut in PLANS ? (planBrut as Plan) : "essentiel";
@@ -78,6 +79,7 @@ export async function createShop(
       slug,
       whatsapp_phone: phone,
       address: address || null,
+      city: city || null,
       delivery_fee: fee,
       plan,
       monthly_price: PLANS[plan].prix,

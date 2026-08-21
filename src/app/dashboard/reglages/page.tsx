@@ -31,6 +31,7 @@ export default async function ReglagesPage() {
           slug: shop.slug,
           description: shop.description,
           address: shop.address,
+          city: shop.city,
           whatsapp_phone: shop.whatsapp_phone,
           delivery_fee: Number(shop.delivery_fee),
           min_order: Number(shop.min_order),

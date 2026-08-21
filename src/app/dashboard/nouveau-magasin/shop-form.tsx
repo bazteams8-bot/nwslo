@@ -37,9 +37,16 @@ export function ShopForm({ plan }: { plan: string }) {
         hint="Mettez 0 si vous ne livrez pas."
       />
       <Field
+        label="Ville"
+        name="city"
+        placeholder="Casablanca"
+        hint="Vos clients filtrent par ville sur la page d'accueil."
+        required
+      />
+      <Field
         label="Adresse (optionnel)"
         name="address"
-        placeholder="Rue Hassan II, Casablanca"
+        placeholder="Rue Hassan II"
       />
 
       <ErrorBox message={state.error} />

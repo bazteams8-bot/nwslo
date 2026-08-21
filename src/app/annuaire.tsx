@@ -12,11 +12,15 @@ export type Snack = {
   logo_url: string | null;
   cover_url: string | null;
   address: string | null;
+  city: string | null;
   delivery_fee: number;
   is_open: boolean;
+  est_nouveau: boolean;
 };
 
-/** Sans accents et en minuscules, pour que « Karama » trouve « Kârama ». */
+const TOUTES = "Toutes les villes";
+
+/** Sans accents et en minuscules, pour que « Sale » trouve « Salé ». */
 function normaliser(texte: string): string {
   return texte
     .normalize("NFD")
@@ -26,19 +30,36 @@ function normaliser(texte: string): string {
 
 export function Annuaire({ snacks }: { snacks: Snack[] }) {
   const [recherche, setRecherche] = useState("");
+  const [ville, setVille] = useState(TOUTES);
+
+  // Une ville n'apparait que si un snack s'y trouve : pas de filtre qui
+  // ne donne rien.
+  const villes = useMemo(() => {
+    const vues = new Map<string, string>();
+    for (const s of snacks) {
+      const v = s.city?.trim();
+      if (v) vues.set(normaliser(v), v);
+    }
+    return [...vues.values()].sort((a, b) => a.localeCompare(b, "fr"));
+  }, [snacks]);
 
   const resultats = useMemo(() => {
     const q = normaliser(recherche.trim());
-    if (!q) return snacks;
 
-    return snacks.filter((s) =>
-      normaliser(`${s.name} ${s.description ?? ""} ${s.address ?? ""}`).includes(q),
-    );
-  }, [snacks, recherche]);
+    return snacks.filter((s) => {
+      if (ville !== TOUTES && normaliser(s.city ?? "") !== normaliser(ville)) {
+        return false;
+      }
+      if (!q) return true;
+      return normaliser(
+        `${s.name} ${s.description ?? ""} ${s.address ?? ""} ${s.city ?? ""}`,
+      ).includes(q);
+    });
+  }, [snacks, recherche, ville]);
 
   return (
     <>
-      <div className="mx-auto mb-8 max-w-md">
+      <div className="mx-auto mb-6 max-w-md">
         <label className="sr-only" htmlFor="recherche">
           Rechercher un snack
         </label>
@@ -47,16 +68,39 @@ export function Annuaire({ snacks }: { snacks: Snack[] }) {
           type="search"
           value={recherche}
           onChange={(e) => setRecherche(e.target.value)}
-          placeholder="Chercher un snack, un quartier..."
+          placeholder="Chercher un snack, un plat..."
           className="w-full rounded-xl border border-bord bg-white px-4 py-3 text-charbon outline-none transition placeholder:text-ardoise-clair focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
         />
       </div>
+
+      {villes.length > 0 ? (
+        <div className="defilement-discret mb-8 flex gap-2 overflow-x-auto pb-1">
+          {[TOUTES, ...villes].map((v) => {
+            const actif = ville === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={actif}
+                onClick={() => setVille(v)}
+                className={`shrink-0 rounded-full px-4 py-1.5 text-sm transition ${
+                  actif
+                    ? "bg-charbon text-creme"
+                    : "border border-bord bg-white text-ardoise hover:border-terracotta hover:text-terracotta"
+                }`}
+              >
+                {v}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       {resultats.length === 0 ? (
         <p className="py-12 text-center text-ardoise">
           {snacks.length === 0
             ? "Aucun snack n'est encore en ligne."
-            : `Aucun snack ne correspond a « ${recherche} ».`}
+            : "Aucun snack ne correspond a votre recherche."}
         </p>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -75,6 +119,12 @@ export function Annuaire({ snacks }: { snacks: Snack[] }) {
                       sizes="(min-width: 1024px) 20rem, (min-width: 640px) 50vw, 100vw"
                       className="object-cover"
                     />
+                  ) : null}
+
+                  {snack.est_nouveau ? (
+                    <span className="absolute end-2 top-2 rounded-full bg-white/95 px-2 py-0.5 text-xs font-medium text-terracotta-fonce">
+                      nouveau
+                    </span>
                   ) : null}
                 </div>
 
@@ -118,9 +168,9 @@ export function Annuaire({ snacks }: { snacks: Snack[] }) {
                         ? `livraison ${snack.delivery_fee.toFixed(2)} DH`
                         : "livraison gratuite"}
                     </span>
-                    {snack.address ? (
+                    {snack.city ? (
                       <span className="rounded-full bg-creme-fonce px-2 py-0.5 text-ardoise">
-                        {snack.address}
+                        {snack.city}
                       </span>
                     ) : null}
                   </div>

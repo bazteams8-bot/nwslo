@@ -15,18 +15,16 @@ export const revalidate = 60;
 export default async function Accueil() {
   const supabase = await createClient();
 
-  // RLS ne laisse passer que les boutiques actives : une boutique
-  // suspendue disparait de l'annuaire sans traitement particulier ici.
-  const { data } = await supabase
-    .from("shops")
-    .select(
-      "id, name, slug, description, logo_url, cover_url, address, delivery_fee, is_open",
-    )
-    .eq("is_active", true)
-    .order("is_open", { ascending: false })
-    .order("created_at", { ascending: false });
+  // Le classement par commandes du mois se fait dans la base : les
+  // volumes ne sont lisibles par personne d'autre que leur gerant, seul
+  // l'ordre ressort. Voir la fonction dans la migration 0008.
+  // Les types de la base ne sont pas generes : on decrit ici ce que la
+  // fonction renvoie, en miroir de la migration 0008.
+  type Ligne = Omit<Snack, "delivery_fee"> & { delivery_fee: string | number };
 
-  const snacks: Snack[] = (data ?? []).map((s) => ({
+  const { data } = await supabase.rpc("snacks_publics");
+
+  const snacks: Snack[] = ((data ?? []) as Ligne[]).map((s) => ({
     id: s.id,
     name: s.name,
     slug: s.slug,
@@ -34,8 +32,10 @@ export default async function Accueil() {
     logo_url: s.logo_url,
     cover_url: s.cover_url,
     address: s.address,
+    city: s.city,
     delivery_fee: Number(s.delivery_fee),
     is_open: s.is_open,
+    est_nouveau: s.est_nouveau,
   }));
 
   return (

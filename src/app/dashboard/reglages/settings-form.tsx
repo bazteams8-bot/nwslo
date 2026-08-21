@@ -12,6 +12,7 @@ type Boutique = {
   slug: string;
   description: string | null;
   address: string | null;
+  city: string | null;
   whatsapp_phone: string;
   delivery_fee: number;
   min_order: number;
@@ -178,6 +179,14 @@ export function SettingsForm({ shop }: { shop: Boutique }) {
           type="tel"
           defaultValue={shop.whatsapp_phone}
           required
+        />
+
+        <Field
+          label="Ville"
+          name="city"
+          defaultValue={shop.city ?? ""}
+          placeholder="Casablanca"
+          hint="Sert aux clients pour vous trouver sur la page d'accueil."
         />
 
         <Field
