@@ -24,9 +24,9 @@ export default async function CartePage() {
     supabase
       .from("products")
       .select(
-        `id, name, description, price, category_id, position,
+        `id, name, description, price, image_url, category_id, position,
          option_groups (
-           id, name, is_required, max_select, position,
+           id, name, is_required, position,
            option_items (id, name, price_delta, position)
          )`,
       )
@@ -55,15 +55,13 @@ export default async function CartePage() {
 
   return (
     <>
-      {/* Barre d'action : absente du papier. */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-semibold text-charbon">
             Carte a imprimer
           </h1>
           <p className="mt-1 text-sm text-ardoise">
-            Votre menu du moment, mis en page pour du A4. Les prix et les
-            supplements viennent de votre catalogue.
+            Votre menu du moment, avec vos photos, mis en page pour du A4.
           </p>
         </div>
         <BoutonImprimer />
@@ -74,90 +72,130 @@ export default async function CartePage() {
           Votre carte est vide. Ajoutez des produits, puis revenez ici.
         </p>
       ) : (
-        <article className="mx-auto max-w-2xl bg-white p-10 text-charbon shadow-sm print:max-w-none print:p-0 print:shadow-none">
-          <header className="border-b-2 border-charbon pb-5 text-center">
-            {shop.logo_url ? (
+        <article className="mx-auto max-w-3xl overflow-hidden rounded-2xl bg-creme shadow-sm print:max-w-none print:rounded-none print:shadow-none">
+          {/* --- Banniere ------------------------------------------- */}
+          <header className="relative h-44 bg-terracotta">
+            {shop.cover_url ? (
               <Image
-                src={shop.logo_url}
+                src={shop.cover_url}
                 alt=""
-                width={64}
-                height={64}
+                fill
                 unoptimized
-                className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
+                className="object-cover"
               />
             ) : null}
 
-            <h2 className="text-3xl font-bold tracking-tight">{shop.name}</h2>
+            {/* Voile sombre : le nom doit rester lisible quelle que
+                soit la photo posee derriere. */}
+            <div className="absolute inset-0 bg-charbon/45" />
 
-            {shop.description ? (
-              <p className="mt-1 text-sm text-ardoise">{shop.description}</p>
-            ) : null}
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              {shop.logo_url ? (
+                <Image
+                  src={shop.logo_url}
+                  alt=""
+                  width={60}
+                  height={60}
+                  unoptimized
+                  className="mb-2 h-15 w-15 rounded-full border-2 border-white object-cover"
+                />
+              ) : null}
 
-            <p className="mt-2 text-sm text-ardoise">
-              {shop.whatsapp_phone}
-              {shop.address ? ` · ${shop.address}` : ""}
-              {shop.city ? `, ${shop.city}` : ""}
-            </p>
+              <h2 className="text-3xl font-bold tracking-tight text-white drop-shadow">
+                {shop.name}
+              </h2>
+
+              {shop.description ? (
+                <p className="mt-1 text-sm text-white/90">
+                  {shop.description}
+                </p>
+              ) : null}
+            </div>
           </header>
 
-          <div className="mt-8 space-y-8">
+          <div className="bg-charbon px-6 py-2 text-center text-sm text-creme">
+            {shop.whatsapp_phone}
+            {shop.address ? ` · ${shop.address}` : ""}
+            {shop.city ? `, ${shop.city}` : ""}
+          </div>
+
+          {/* --- Les categories -------------------------------------- */}
+          <div className="space-y-7 p-7">
             {groupes.map((groupe) => (
-              // `break-inside-avoid` : une categorie coupee en deux
-              // entre deux pages se lit mal.
+              // Une categorie coupee entre deux pages se lit mal.
               <section key={groupe.titre} className="break-inside-avoid">
-                <h3 className="mb-4 text-center text-lg font-semibold uppercase tracking-widest">
+                <h3 className="mb-3 flex items-center gap-3 text-lg font-bold uppercase tracking-widest text-terracotta-fonce">
+                  <span className="h-px flex-1 bg-terracotta/40" />
                   {groupe.titre}
+                  <span className="h-px flex-1 bg-terracotta/40" />
                 </h3>
 
-                <ul className="space-y-3">
+                <ul className="grid gap-3 sm:grid-cols-2 print:grid-cols-2">
                   {groupe.produits.map((produit) => {
                     const options = [...(produit.option_groups ?? [])].sort(
                       (a, b) => a.position - b.position,
                     );
 
                     return (
-                      <li key={produit.id} className="break-inside-avoid">
-                        {/* Ligne de points entre le nom et le prix :
-                            l'oeil suit sans chercher la colonne. */}
-                        <div className="flex items-baseline gap-2">
-                          <span className="font-medium">{produit.name}</span>
-                          <span className="min-w-4 flex-1 translate-y-[-3px] border-b border-dotted border-ardoise-clair" />
-                          <span className="font-medium tabular-nums">
-                            {Number(produit.price).toFixed(2)} DH
-                          </span>
+                      <li
+                        key={produit.id}
+                        className="flex break-inside-avoid gap-3 rounded-xl border border-bord bg-white p-2.5"
+                      >
+                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-creme-fonce">
+                          {produit.image_url ? (
+                            <Image
+                              src={produit.image_url}
+                              alt=""
+                              width={80}
+                              height={80}
+                              unoptimized
+                              className="h-full w-full object-cover"
+                            />
+                          ) : null}
                         </div>
 
-                        {produit.description ? (
-                          <p className="mt-0.5 text-sm text-ardoise">
-                            {produit.description}
-                          </p>
-                        ) : null}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="font-semibold text-charbon">
+                              {produit.name}
+                            </span>
+                            <span className="shrink-0 rounded-full bg-terracotta px-2 py-0.5 text-sm font-semibold text-white tabular-nums">
+                              {Number(produit.price).toFixed(0)} DH
+                            </span>
+                          </div>
 
-                        {options.map((groupeOption) => {
-                          const choix = [...(groupeOption.option_items ?? [])]
-                            .sort((a, b) => a.position - b.position)
-                            .map((item) =>
-                              Number(item.price_delta) === 0
-                                ? item.name
-                                : `${item.name} +${Number(item.price_delta).toFixed(0)} DH`,
-                            );
-
-                          if (choix.length === 0) return null;
-
-                          return (
-                            <p
-                              key={groupeOption.id}
-                              className="mt-0.5 text-sm text-ardoise-clair"
-                            >
-                              <span className="font-medium">
-                                {groupeOption.name}
-                                {groupeOption.is_required ? "" : " (au choix)"}
-                                {" : "}
-                              </span>
-                              {choix.join(" · ")}
+                          {produit.description ? (
+                            <p className="mt-0.5 text-xs leading-snug text-ardoise">
+                              {produit.description}
                             </p>
-                          );
-                        })}
+                          ) : null}
+
+                          {options.map((groupeOption) => {
+                            const choix = [
+                              ...(groupeOption.option_items ?? []),
+                            ]
+                              .sort((a, b) => a.position - b.position)
+                              .map((item) =>
+                                Number(item.price_delta) === 0
+                                  ? item.name
+                                  : `${item.name} +${Number(item.price_delta).toFixed(0)}`,
+                              );
+
+                            if (choix.length === 0) return null;
+
+                            return (
+                              <p
+                                key={groupeOption.id}
+                                className="mt-0.5 text-[11px] leading-snug text-ardoise-clair"
+                              >
+                                <span className="font-semibold text-terracotta-fonce">
+                                  {groupeOption.name} :{" "}
+                                </span>
+                                {choix.join(" · ")}
+                              </p>
+                            );
+                          })}
+                        </div>
                       </li>
                     );
                   })}
@@ -166,24 +204,28 @@ export default async function CartePage() {
             ))}
           </div>
 
-          <footer className="mt-10 flex items-center justify-center gap-5 border-t-2 border-charbon pt-6">
-            <Image
-              src={qr}
-              alt=""
-              width={96}
-              height={96}
-              unoptimized
-              className="h-24 w-24"
-            />
+          {/* --- Pied ------------------------------------------------- */}
+          <footer className="flex break-inside-avoid items-center justify-center gap-5 bg-terracotta px-6 py-5 text-white">
+            <div className="rounded-lg bg-white p-1.5">
+              <Image
+                src={qr}
+                alt=""
+                width={88}
+                height={88}
+                unoptimized
+                className="h-22 w-22"
+              />
+            </div>
+
             <div className="text-sm">
-              <p className="font-semibold">Commandez en ligne</p>
-              <p className="text-ardoise">
+              <p className="text-lg font-bold">Commandez en ligne</p>
+              <p className="text-white/90">
                 Scannez le code, choisissez, et on prepare.
               </p>
-              <p className="mt-1 font-mono text-xs text-ardoise">{lien}</p>
+              <p className="mt-1 font-mono text-xs text-white/80">{lien}</p>
               {shop.delivery_fee > 0 ? (
-                <p className="mt-1 text-ardoise">
-                  Livraison {Number(shop.delivery_fee).toFixed(2)} DH
+                <p className="mt-1 text-white/90">
+                  Livraison {Number(shop.delivery_fee).toFixed(0)} DH
                   {shop.min_order > 0
                     ? ` · minimum ${Number(shop.min_order).toFixed(0)} DH`
                     : ""}

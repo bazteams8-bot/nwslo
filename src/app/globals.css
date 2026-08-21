@@ -69,21 +69,20 @@ body {
 @media print {
   @page {
     size: A4;
-    margin: 14mm;
+    margin: 10mm;
   }
 
-  /* Le fond creme et les couleurs de marque coutent de l'encre et
-     grisent le texte : sur papier, noir sur blanc. */
-  body {
-    background: #fff;
-    color: #000;
+  /* Sans cela, le navigateur retire les aplats de couleur et les photos
+     perdent leur cadre : la carte imprimee ne ressemble plus a celle
+     affichee. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  /* L'entete et la navigation du tableau de bord n'ont rien a faire
-     sur la carte. */
+  /* La navigation du tableau de bord n'a rien a faire sur la carte. */
   header nav,
-  header form,
-  .print\:hidden {
+  header form {
     display: none !important;
   }
 }
