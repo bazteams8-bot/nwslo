@@ -6,14 +6,18 @@ import { formaterDh } from "@/lib/cart";
 export const metadata: Metadata = { title: "Statistiques — Nwslo" };
 export const dynamic = "force-dynamic";
 
-type Commande = {
-  id: string;
-  total: number;
-  status: string;
-  created_at: string;
-};
+const FUSEAU = "Africa/Casablanca";
 
-function debutDuMois(decalage = 0): Date {
+/** Le jour du mois, vu de Casablanca et non du serveur. */
+function jourLocal(iso: string): number {
+  return Number(
+    new Intl.DateTimeFormat("fr-FR", { day: "numeric", timeZone: FUSEAU }).format(
+      new Date(iso),
+    ),
+  );
+}
+
+function debutDeMois(decalage = 0): Date {
   const d = new Date();
   d.setDate(1);
   d.setMonth(d.getMonth() + decalage);
@@ -21,110 +25,97 @@ function debutDuMois(decalage = 0): Date {
   return d;
 }
 
-/** « +32 % », « -8 % », ou rien quand il n'y a pas de quoi comparer. */
-function evolution(actuel: number, precedent: number): string | null {
-  if (precedent === 0) return actuel > 0 ? "premier mois" : null;
-  const variation = Math.round(((actuel - precedent) / precedent) * 100);
-  if (variation === 0) return "stable";
-  return `${variation > 0 ? "+" : ""}${variation} % vs mois dernier`;
+function evolution(actuel: number, precedent: number) {
+  if (precedent === 0) {
+    return actuel > 0
+      ? { texte: "premier mois", classe: "text-ardoise" }
+      : { texte: "—", classe: "text-ardoise-clair" };
+  }
+  const pourcent = Math.round(((actuel - precedent) / precedent) * 100);
+  if (pourcent === 0) return { texte: "stable", classe: "text-ardoise" };
+
+  return {
+    texte: `${pourcent > 0 ? "+" : ""}${pourcent} % vs mois dernier`,
+    classe: pourcent > 0 ? "text-vert-fonce" : "text-red-600",
+  };
 }
 
 export default async function StatistiquesPage() {
   const { shop, supabase } = await getMyShop();
   if (!shop) redirect("/dashboard/nouveau-magasin");
 
-  const moisEnCours = debutDuMois();
-  const moisPrecedent = debutDuMois(-1);
+  const debutMois = debutDeMois();
+  const debutMoisDernier = debutDeMois(-1);
 
-  // Deux mois suffisent pour tout ce qui est affiche ici, et evitent de
-  // ramener tout l'historique a chaque visite.
   const { data } = await supabase
     .from("orders")
-    .select("id, total, status, created_at")
+    .select(
+      "id, created_at, total, status, order_items (product_name, quantity, line_total)",
+    )
     .eq("shop_id", shop.id)
-    .gte("created_at", moisPrecedent.toISOString())
-    .order("created_at", { ascending: true });
+    .gte("created_at", debutMoisDernier.toISOString());
 
-  const toutes: Commande[] = (data ?? []).map((c) => ({
-    id: c.id,
-    total: Number(c.total),
-    status: c.status,
-    created_at: c.created_at,
-  }));
+  const commandes = data ?? [];
 
-  const duMois = toutes.filter((c) => new Date(c.created_at) >= moisEnCours);
-  const duMoisDernier = toutes.filter(
-    (c) => new Date(c.created_at) < moisEnCours,
+  // Une commande annulee n'a rien rapporte : elle est comptee a part.
+  const duMois = commandes.filter((c) => new Date(c.created_at) >= debutMois);
+  const valides = duMois.filter((c) => c.status !== "cancelled");
+  const annulees = duMois.length - valides.length;
+
+  const moisDernier = commandes.filter(
+    (c) =>
+      new Date(c.created_at) < debutMois && c.status !== "cancelled",
   );
 
-  // Une commande annulee n'a rien rapporte : elle compte dans le volume,
-  // jamais dans le chiffre.
-  const encaisse = (liste: Commande[]) =>
-    liste
-      .filter((c) => c.status !== "cancelled")
-      .reduce((total, c) => total + c.total, 0);
+  const chiffre = valides.reduce((t, c) => t + Number(c.total), 0);
+  const chiffrePrecedent = moisDernier.reduce((t, c) => t + Number(c.total), 0);
+  const panier = valides.length ? chiffre / valides.length : 0;
 
-  const chiffre = encaisse(duMois);
-  const chiffrePrecedent = encaisse(duMoisDernier);
-
-  const honorees = duMois.filter((c) => c.status !== "cancelled");
-  const panier = honorees.length ? chiffre / honorees.length : 0;
-  const annulees = duMois.filter((c) => c.status === "cancelled").length;
-
-  // Produits les plus vendus : uniquement sur les commandes du mois.
-  const idsDuMois = duMois.map((c) => c.id);
-  const { data: lignes } = idsDuMois.length
-    ? await supabase
-        .from("order_items")
-        .select("product_name, quantity, line_total, order_id")
-        .in("order_id", idsDuMois.slice(0, 500))
-    : { data: [] };
-
+  // --- Produits les plus vendus ---------------------------------------
   const parProduit = new Map<string, { quantite: number; total: number }>();
-  for (const ligne of lignes ?? []) {
-    const actuel = parProduit.get(ligne.product_name) ?? {
-      quantite: 0,
-      total: 0,
-    };
-    actuel.quantite += ligne.quantity;
-    actuel.total += Number(ligne.line_total);
-    parProduit.set(ligne.product_name, actuel);
+
+  for (const commande of valides) {
+    for (const ligne of commande.order_items ?? []) {
+      const actuel = parProduit.get(ligne.product_name) ?? {
+        quantite: 0,
+        total: 0,
+      };
+      actuel.quantite += ligne.quantity;
+      actuel.total += Number(ligne.line_total);
+      parProduit.set(ligne.product_name, actuel);
+    }
   }
 
   const meilleurs = [...parProduit.entries()]
     .sort((a, b) => b[1].quantite - a[1].quantite)
-    .slice(0, 8);
+    .slice(0, 5);
 
-  // Une barre par jour ecoule du mois.
-  const aujourdhui = new Date();
-  const jours = Array.from({ length: aujourdhui.getDate() }, (_, i) => {
-    const jour = i + 1;
-    return {
-      jour,
-      nombre: duMois.filter((c) => new Date(c.created_at).getDate() === jour)
-        .length,
-    };
-  });
-  const maximum = Math.max(1, ...jours.map((j) => j.nombre));
+  // --- Commandes par jour ----------------------------------------------
+  const joursDuMois = new Date(
+    debutMois.getFullYear(),
+    debutMois.getMonth() + 1,
+    0,
+  ).getDate();
 
-  const tendance = evolution(duMois.length, duMoisDernier.length);
+  const parJour = Array.from({ length: joursDuMois }, () => 0);
+  for (const commande of valides) parJour[jourLocal(commande.created_at) - 1]++;
+  const pic = Math.max(1, ...parJour);
 
   const chiffres = [
     {
       label: "Commandes ce mois-ci",
-      valeur: String(duMois.length),
-      note: tendance,
+      valeur: String(valides.length),
+      note: evolution(valides.length, moisDernier.length),
     },
     {
-      label: "Encaisse",
+      label: "Chiffre d'affaires",
       valeur: formaterDh(chiffre),
       note: evolution(chiffre, chiffrePrecedent),
     },
-    { label: "Panier moyen", valeur: formaterDh(panier), note: null },
     {
-      label: "Annulees",
-      valeur: String(annulees),
-      note: annulees > 0 ? "non comptees dans l'encaisse" : null,
+      label: "Panier moyen",
+      valeur: formaterDh(panier),
+      note: { texte: `${annulees} annulee${annulees > 1 ? "s" : ""}`, classe: "text-ardoise" },
     },
   ];
 
@@ -140,7 +131,7 @@ export default async function StatistiquesPage() {
         </p>
       </div>
 
-      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="grid gap-4 sm:grid-cols-3">
         {chiffres.map((c) => (
           <div
             key={c.label}
@@ -150,9 +141,9 @@ export default async function StatistiquesPage() {
             <dd className="mt-1 text-2xl font-semibold text-charbon">
               {c.valeur}
             </dd>
-            {c.note ? (
-              <p className="mt-0.5 text-xs text-ardoise-clair">{c.note}</p>
-            ) : null}
+            <dd className={`mt-0.5 text-sm ${c.note.classe}`}>
+              {c.note.texte}
+            </dd>
           </div>
         ))}
       </dl>
@@ -160,50 +151,50 @@ export default async function StatistiquesPage() {
       <section className="rounded-xl border border-bord bg-white p-5">
         <h2 className="mb-4 font-medium text-charbon">Commandes par jour</h2>
 
-        {duMois.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ardoise">
+        {valides.length === 0 ? (
+          <p className="py-6 text-center text-sm text-ardoise">
             Aucune commande ce mois-ci pour l&apos;instant.
           </p>
         ) : (
-          <div className="flex h-40 items-end gap-1">
-            {jours.map((j) => (
+          <div className="flex h-32 items-end gap-1">
+            {parJour.map((nombre, i) => (
               <div
-                key={j.jour}
-                className="flex flex-1 flex-col items-center gap-1"
-                title={`${j.jour} : ${j.nombre} commande${j.nombre > 1 ? "s" : ""}`}
+                key={i}
+                title={`${i + 1} : ${nombre} commande${nombre > 1 ? "s" : ""}`}
+                className="flex-1 rounded-t bg-terracotta-pale"
+                style={{ height: `${Math.max(2, (nombre / pic) * 100)}%` }}
               >
-                <span className="text-xs text-ardoise-clair">
-                  {j.nombre > 0 ? j.nombre : ""}
-                </span>
                 <div
-                  className="w-full rounded-t bg-terracotta"
-                  style={{
-                    height: `${Math.max(2, (j.nombre / maximum) * 100)}%`,
-                    opacity: j.nombre === 0 ? 0.15 : 1,
-                  }}
+                  className="h-full w-full rounded-t bg-terracotta"
+                  style={{ opacity: nombre === 0 ? 0 : 1 }}
                 />
-                <span className="text-[10px] text-ardoise-clair">{j.jour}</span>
               </div>
             ))}
           </div>
         )}
+
+        <div className="mt-2 flex justify-between text-xs text-ardoise-clair">
+          <span>1</span>
+          <span>{joursDuMois}</span>
+        </div>
       </section>
 
       <section className="rounded-xl border border-bord bg-white">
         <h2 className="border-b border-bord px-5 py-3 font-medium text-charbon">
-          Les plus commandes ce mois-ci
+          Les plus vendus
         </h2>
 
         {meilleurs.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-ardoise">
-            Rien a classer pour l&apos;instant.
+            Rien encore. Les produits apparaitront ici des la premiere
+            commande.
           </p>
         ) : (
-          <ul className="divide-y divide-bord">
-            {meilleurs.map(([nom, stats], rang) => (
+          <ol className="divide-y divide-bord">
+            {meilleurs.map(([nom, stat], rang) => (
               <li
                 key={nom}
-                className="flex items-center gap-3 px-5 py-2.5"
+                className="flex items-center gap-3 px-5 py-3"
               >
                 <span className="w-5 text-sm text-ardoise-clair">
                   {rang + 1}
@@ -212,14 +203,14 @@ export default async function StatistiquesPage() {
                   {nom}
                 </span>
                 <span className="text-sm text-ardoise">
-                  {stats.quantite} vendu{stats.quantite > 1 ? "s" : ""}
+                  {stat.quantite} vendu{stat.quantite > 1 ? "s" : ""}
                 </span>
                 <span className="w-24 text-end font-medium text-charbon">
-                  {formaterDh(stats.total)}
+                  {formaterDh(stat.total)}
                 </span>
               </li>
             ))}
-          </ul>
+          </ol>
         )}
       </section>
     </div>

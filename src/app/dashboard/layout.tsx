@@ -51,6 +51,12 @@ export default async function DashboardLayout({
                 Statistiques
               </Link>
               <Link
+                href="/dashboard/statistiques"
+                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
+              >
+                Statistiques
+              </Link>
+              <Link
                 href="/dashboard/reglages"
                 className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >
