@@ -2,6 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin";
+import {
+  ajouterDuree,
+  estEssai,
+  PLANS,
+  type Duree,
+  type Plan,
+} from "@/lib/plans";
 
 export type AdminState = {
   error: string | null;
@@ -38,6 +45,8 @@ function motDePasseTemporaire(): string {
   return Array.from(octets, (o) => alphabet[o % alphabet.length]).join("");
 }
 
+const jour = (d: Date) => d.toISOString().slice(0, 10);
+
 export async function createShopForClient(
   _prev: AdminState,
   formData: FormData,
@@ -46,7 +55,9 @@ export async function createShopForClient(
   const nom = String(formData.get("name") ?? "").trim();
   const phone = normaliserTelephone(String(formData.get("whatsapp") ?? ""));
   const frais = Number(String(formData.get("delivery_fee") ?? "0").replace(",", "."));
-  const abonnement = String(formData.get("subscription_until") ?? "").trim();
+  const plan = String(formData.get("plan") ?? "essentiel") as Plan;
+  const duree = String(formData.get("duree") ?? "trial30") as Duree;
+  const inscription = String(formData.get("subscribed_at") ?? "").trim();
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return { ...VIDE, error: "Adresse e-mail invalide." };
@@ -60,9 +71,16 @@ export async function createShopForClient(
   if (!Number.isFinite(frais) || frais < 0) {
     return { ...VIDE, error: "Le prix de livraison doit etre positif." };
   }
+  if (!PLANS[plan]) {
+    return { ...VIDE, error: "Formule inconnue." };
+  }
+
+  const debut = inscription ? new Date(inscription + "T12:00:00") : new Date();
+  if (Number.isNaN(debut.getTime())) {
+    return { ...VIDE, error: "Date d'inscription invalide." };
+  }
 
   const { admin } = await requireAdmin();
-
   const motDePasse = motDePasseTemporaire();
 
   // `email_confirm: true` : le compte est cree deja confirme. C'est ce
@@ -85,11 +103,10 @@ export async function createShopForClient(
     };
   }
 
-  let base = slugifier(nom) || "snack";
-  let slug = base;
+  const base = slugifier(nom) || "snack";
 
   for (let essai = 0; essai < 5; essai++) {
-    slug = essai === 0 ? base : `${base}-${essai + 1}`;
+    const slug = essai === 0 ? base : `${base}-${essai + 1}`;
 
     const { error } = await admin.from("shops").insert({
       owner_id: compte.user.id,
@@ -97,7 +114,11 @@ export async function createShopForClient(
       slug,
       whatsapp_phone: phone,
       delivery_fee: frais,
-      subscription_until: abonnement || null,
+      plan,
+      monthly_price: PLANS[plan].prix,
+      is_trial: estEssai(duree),
+      subscribed_at: jour(debut),
+      subscription_until: jour(ajouterDuree(debut, duree)),
     });
 
     if (!error) {
@@ -131,43 +152,50 @@ export async function toggleShopActive(formData: FormData): Promise<void> {
   revalidatePath("/admin");
 }
 
-export async function updateSubscription(formData: FormData): Promise<void> {
+/**
+ * Prolonge l'abonnement de la duree choisie.
+ *
+ * Le point de depart est la fin en cours si elle n'est pas passee,
+ * sinon aujourd'hui : un client qui paie en avance ne perd pas les
+ * jours restants, et un client en retard repart d'un mois entier plutot
+ * que d'un mois deja a moitie consomme.
+ *
+ * Prolonger met fin a l'essai : on ne prolonge pas du gratuit.
+ */
+export async function renewSubscription(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
-  const date = String(formData.get("subscription_until") ?? "").trim();
+  const actuelle = String(formData.get("current") ?? "");
+  const duree = String(formData.get("duree") ?? "m1") as Duree;
   if (!id) return;
+
+  const aujourdhui = new Date();
+  const depart =
+    actuelle && new Date(actuelle + "T12:00:00") > aujourdhui
+      ? new Date(actuelle + "T12:00:00")
+      : aujourdhui;
 
   const { admin } = await requireAdmin();
   await admin
     .from("shops")
-    .update({ subscription_until: date || null })
+    .update({
+      subscription_until: jour(ajouterDuree(depart, duree)),
+      is_trial: false,
+    })
     .eq("id", id);
 
   revalidatePath("/admin");
 }
 
-/**
- * Ajoute un mois d'abonnement.
- *
- * Le point de depart est la fin d'abonnement en cours si elle n'est pas
- * passee, sinon aujourd'hui : un client qui paie en avance ne perd pas
- * les jours qu'il lui restait, et un client en retard repart de zero
- * plutot que de recevoir un mois deja a moitie consomme.
- */
-export async function extendSubscription(formData: FormData): Promise<void> {
+/** Change la formule, et aligne le prix sur celui du palier. */
+export async function changePlan(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
-  const actuelle = String(formData.get("current") ?? "");
-  if (!id) return;
-
-  const aujourdhui = new Date();
-  const depart =
-    actuelle && new Date(actuelle) > aujourdhui ? new Date(actuelle) : aujourdhui;
-
-  depart.setMonth(depart.getMonth() + 1);
+  const plan = String(formData.get("plan") ?? "") as Plan;
+  if (!id || !PLANS[plan]) return;
 
   const { admin } = await requireAdmin();
   await admin
     .from("shops")
-    .update({ subscription_until: depart.toISOString().slice(0, 10) })
+    .update({ plan, monthly_price: PLANS[plan].prix })
     .eq("id", id);
 
   revalidatePath("/admin");

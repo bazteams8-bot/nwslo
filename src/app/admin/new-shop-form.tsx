@@ -2,9 +2,13 @@
 
 import { useActionState } from "react";
 import { createShopForClient, type AdminState } from "./actions";
+import { DUREES, PLANS } from "@/lib/plans";
 import { ErrorBox, Field, SubmitButton } from "@/components/form";
 
 const INITIAL: AdminState = { error: null, identifiants: null };
+
+const CHAMP =
+  "block w-full rounded-lg border border-bord bg-white px-3 py-2.5 text-charbon outline-none transition focus:border-terracotta focus:ring-2 focus:ring-terracotta/20";
 
 export function NewShopForm() {
   const [state, formAction] = useActionState(createShopForClient, INITIAL);
@@ -66,22 +70,50 @@ export function NewShopForm() {
         placeholder="0612345678"
         required
       />
+      <Field
+        label="Livraison (DH)"
+        name="delivery_fee"
+        type="number"
+        min={0}
+        step="0.5"
+        defaultValue="0"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Livraison (DH)"
-          name="delivery_fee"
-          type="number"
-          min={0}
-          step="0.5"
-          defaultValue="0"
-        />
-        <Field
-          label="Abonnement jusqu'au"
-          name="subscription_until"
-          type="date"
-        />
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-charbon">
+            Formule
+          </span>
+          <select name="plan" defaultValue="essentiel" className={CHAMP}>
+            {Object.entries(PLANS).map(([cle, p]) => (
+              <option key={cle} value={cle}>
+                {p.nom} — {p.prix} DH/mois
+                {p.plafond ? ` (${p.plafond} cmd)` : " (illimite)"}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-charbon">
+            Duree
+          </span>
+          <select name="duree" defaultValue="trial30" className={CHAMP}>
+            {DUREES.map((d) => (
+              <option key={d.valeur} value={d.valeur}>
+                {d.libelle}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+
+      <Field
+        label="Date d'inscription"
+        name="subscribed_at"
+        type="date"
+        hint="La fin d'abonnement se calcule a partir de cette date."
+      />
 
       <ErrorBox message={state.error} />
       <SubmitButton>Creer le snack</SubmitButton>
