@@ -200,3 +200,45 @@ export async function changePlan(formData: FormData): Promise<void> {
 
   revalidatePath("/admin");
 }
+
+export type ResetState = { error: string | null; motDePasse: string | null };
+
+/**
+ * Donne un nouveau mot de passe temporaire au gerant d'une boutique.
+ *
+ * Remplace le parcours « mot de passe oublie » : avec une poignee de
+ * clients, un bouton ici coute moins qu'un envoi d'e-mail a configurer,
+ * et ne depend pas d'un message qui finirait en indesirables.
+ */
+export async function resetClientPassword(
+  _prev: ResetState,
+  formData: FormData,
+): Promise<ResetState> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { error: "Snack introuvable.", motDePasse: null };
+
+  const { admin } = await requireAdmin();
+
+  const { data: boutiques } = await admin
+    .from("shops")
+    .select("owner_id")
+    .eq("id", id)
+    .limit(1);
+
+  const proprietaire = boutiques?.[0]?.owner_id;
+  if (!proprietaire) {
+    return { error: "Snack introuvable.", motDePasse: null };
+  }
+
+  const motDePasse = motDePasseTemporaire();
+
+  const { error } = await admin.auth.admin.updateUserById(proprietaire, {
+    password: motDePasse,
+  });
+
+  if (error) {
+    return { error: "Impossible de changer le mot de passe.", motDePasse: null };
+  }
+
+  return { error: null, motDePasse };
+}

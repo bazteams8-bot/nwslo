@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 import { DUREES, etatQuota, PLANS, type Plan } from "@/lib/plans";
 import { NewShopForm } from "./new-shop-form";
 import { changePlan, renewSubscription, toggleShopActive } from "./actions";
+import { ResetPassword } from "./reset-password";
 
 export const metadata: Metadata = { title: "Administration — Nwslo" };
 export const dynamic = "force-dynamic";
@@ -256,6 +257,8 @@ export default async function AdminPage() {
                     Renouveler
                   </button>
                 </form>
+
+                <ResetPassword shopId={boutique.id} />
               </div>
             </article>
           );
