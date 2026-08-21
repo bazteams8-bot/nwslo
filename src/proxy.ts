@@ -15,9 +15,10 @@ export default async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
   const path = request.nextUrl.pathname;
 
-  // Non connecte sur une page du tableau de bord -> vers la connexion,
-  // en gardant la destination pour y revenir apres.
-  if (!user && path.startsWith("/dashboard")) {
+  // Non connecte sur une page privee -> vers la connexion, en gardant
+  // la destination pour y revenir apres. `/admin` verifie en plus le
+  // role cote serveur : ici on ne fait qu'eviter un aller-retour.
+  if (!user && (path.startsWith("/dashboard") || path.startsWith("/admin"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
