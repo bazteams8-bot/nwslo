@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import QRCode from "qrcode";
 import { getMyShop } from "@/lib/auth";
+import { siteUrl } from "@/lib/site-url";
+import { QrCard } from "./qr-card";
 
 export const metadata: Metadata = { title: "Tableau de bord — Nwslo" };
 
@@ -22,6 +24,16 @@ export default async function DashboardPage() {
       .select("id", { count: "exact", head: true })
       .eq("shop_id", shop.id),
   ]);
+
+  const lien = `${await siteUrl()}/${shop.slug}`;
+
+  // 512 px : assez large pour rester net une fois imprime et scanne
+  // depuis une table. La marge par defaut est trop epaisse a l'ecran.
+  const qr = await QRCode.toDataURL(lien, {
+    width: 512,
+    margin: 2,
+    color: { dark: "#2c2c2a", light: "#ffffff" },
+  });
 
   return (
     <div className="space-y-6">
@@ -56,18 +68,7 @@ export default async function DashboardPage() {
         ))}
       </dl>
 
-      <div className="rounded-xl border border-bord bg-white p-5">
-        <h2 className="font-medium text-charbon">Votre lien de commande</h2>
-        <p className="mt-1 text-sm text-ardoise-clair">
-          C&apos;est l&apos;adresse a partager avec vos clients.
-        </p>
-        <Link
-          href={`/${shop.slug}`}
-          className="mt-3 inline-block rounded-lg border border-bord px-3 py-2 font-mono text-sm text-terracotta-fonce transition hover:bg-creme"
-        >
-          /{shop.slug}
-        </Link>
-      </div>
+      <QrCard lien={lien} qr={qr} nomFichier={`qr-${shop.slug}.png`} />
     </div>
   );
 }
