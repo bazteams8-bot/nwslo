@@ -144,3 +144,31 @@ export async function updateSubscription(formData: FormData): Promise<void> {
 
   revalidatePath("/admin");
 }
+
+/**
+ * Ajoute un mois d'abonnement.
+ *
+ * Le point de depart est la fin d'abonnement en cours si elle n'est pas
+ * passee, sinon aujourd'hui : un client qui paie en avance ne perd pas
+ * les jours qu'il lui restait, et un client en retard repart de zero
+ * plutot que de recevoir un mois deja a moitie consomme.
+ */
+export async function extendSubscription(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  const actuelle = String(formData.get("current") ?? "");
+  if (!id) return;
+
+  const aujourdhui = new Date();
+  const depart =
+    actuelle && new Date(actuelle) > aujourdhui ? new Date(actuelle) : aujourdhui;
+
+  depart.setMonth(depart.getMonth() + 1);
+
+  const { admin } = await requireAdmin();
+  await admin
+    .from("shops")
+    .update({ subscription_until: depart.toISOString().slice(0, 10) })
+    .eq("id", id);
+
+  revalidatePath("/admin");
+}

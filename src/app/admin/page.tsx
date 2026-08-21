@@ -2,13 +2,32 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin";
 import { NewShopForm } from "./new-shop-form";
-import { toggleShopActive, updateSubscription } from "./actions";
+import {
+  extendSubscription,
+  toggleShopActive,
+  updateSubscription,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Administration — Nwslo" };
 export const dynamic = "force-dynamic";
 
 const JOUR = 24 * 60 * 60 * 1000;
 const BIENTOT = 3; // jours avant expiration ou l'on previent
+
+/**
+ * « 2026-08-23 » -> « 23 aout 2026 ».
+ *
+ * Le champ date s'affiche dans la langue du navigateur : en anglais il
+ * montre mois/jour, ce qui se lit a l'envers ici et fait saisir le
+ * mauvais mois. La date en toutes lettres leve le doute.
+ */
+function enToutesLettres(date: string): string {
+  return new Date(date + "T12:00:00").toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 function etatAbonnement(date: string | null) {
   if (!date) {
@@ -139,27 +158,50 @@ export default async function AdminPage() {
                 </form>
               </div>
 
-              <form
-                action={updateSubscription}
-                className="mt-3 flex flex-wrap items-center gap-2 border-t border-bord pt-3"
-              >
-                <input type="hidden" name="id" value={boutique.id} />
-                <label className="text-sm text-ardoise">
-                  Abonnement jusqu&apos;au
-                </label>
-                <input
-                  type="date"
-                  name="subscription_until"
-                  defaultValue={boutique.subscription_until ?? ""}
-                  className="rounded-lg border border-bord bg-white px-3 py-1.5 text-sm text-charbon outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-bord px-3 py-1.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-bord pt-3">
+                <form
+                  action={updateSubscription}
+                  className="flex flex-wrap items-center gap-2"
                 >
-                  Enregistrer
-                </button>
-              </form>
+                  <input type="hidden" name="id" value={boutique.id} />
+                  <label className="text-sm text-ardoise">
+                    Abonnement jusqu&apos;au
+                  </label>
+                  <input
+                    type="date"
+                    name="subscription_until"
+                    defaultValue={boutique.subscription_until ?? ""}
+                    className="rounded-lg border border-bord bg-white px-3 py-1.5 text-sm text-charbon outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20"
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-bord px-3 py-1.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
+                  >
+                    Enregistrer
+                  </button>
+                </form>
+
+                <form action={extendSubscription}>
+                  <input type="hidden" name="id" value={boutique.id} />
+                  <input
+                    type="hidden"
+                    name="current"
+                    value={boutique.subscription_until ?? ""}
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-terracotta px-3 py-1.5 text-sm font-medium text-white transition hover:bg-terracotta-fonce"
+                  >
+                    + 1 mois
+                  </button>
+                </form>
+
+                {boutique.subscription_until ? (
+                  <span className="text-sm text-ardoise-clair">
+                    soit le {enToutesLettres(boutique.subscription_until)}
+                  </span>
+                ) : null}
+              </div>
             </article>
           );
         })}
