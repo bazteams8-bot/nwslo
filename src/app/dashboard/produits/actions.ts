@@ -140,3 +140,66 @@ export async function deleteProduct(formData: FormData): Promise<void> {
 
   revalidatePath("/dashboard/produits");
 }
+
+/**
+ * Deplace un produit d'un cran dans sa categorie.
+ *
+ * Le voisin est cherche dans la meme categorie et non dans toute la
+ * carte : sinon une fleche ferait sauter le produit chez les boissons,
+ * ce que personne n'attend d'un bouton « monter ».
+ */
+export async function moveProduct(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  const direction = String(formData.get("direction") ?? "");
+  if (!id || (direction !== "up" && direction !== "down")) return;
+
+  const { shop, supabase } = await getMyShop();
+  if (!shop) return;
+
+  const { data: cible } = await supabase
+    .from("products")
+    .select("id, category_id, position")
+    .eq("id", id)
+    .eq("shop_id", shop.id)
+    .limit(1);
+
+  const produit = cible?.[0];
+  if (!produit) return;
+
+  // `is` pour les produits sans categorie : `eq` ne rapproche jamais
+  // deux NULL en SQL.
+  const requete = supabase
+    .from("products")
+    .select("id, position")
+    .eq("shop_id", shop.id)
+    .order("position", { ascending: true });
+
+  const { data: voisins } = await (produit.category_id
+    ? requete.eq("category_id", produit.category_id)
+    : requete.is("category_id", null));
+
+  if (!voisins) return;
+
+  const index = voisins.findIndex((p) => p.id === id);
+  const cibleIndex = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || cibleIndex < 0 || cibleIndex >= voisins.length) return;
+
+  const a = voisins[index];
+  const b = voisins[cibleIndex];
+
+  await Promise.all([
+    supabase
+      .from("products")
+      .update({ position: b.position })
+      .eq("id", a.id)
+      .eq("shop_id", shop.id),
+    supabase
+      .from("products")
+      .update({ position: a.position })
+      .eq("id", b.id)
+      .eq("shop_id", shop.id),
+  ]);
+
+  revalidatePath("/dashboard/produits");
+  revalidatePath(`/${shop.slug}`);
+}

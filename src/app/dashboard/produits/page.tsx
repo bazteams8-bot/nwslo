@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getMyShop } from "@/lib/auth";
 import { ConfirmButton } from "@/components/confirm-button";
-import { deleteProduct, toggleAvailability } from "./actions";
+import { deleteProduct, moveProduct, toggleAvailability } from "./actions";
 
 export const metadata: Metadata = { title: "Produits — Nwslo" };
 
@@ -74,7 +74,7 @@ export default async function ProduitsPage() {
               {groupe.titre}
             </h2>
             <ul className="divide-y divide-bord">
-              {groupe.produits.map((produit) => (
+              {groupe.produits.map((produit, rang) => (
                 <li
                   key={produit.id}
                   className="flex flex-wrap items-center gap-4 px-5 py-3"
@@ -112,6 +112,34 @@ export default async function ProduitsPage() {
                   </span>
 
                   <div className="flex items-center gap-1">
+                    {/* L'ordre est celui que verra le client : ce qui
+                        rapporte se met en haut de sa categorie. */}
+                    <form action={moveProduct}>
+                      <input type="hidden" name="id" value={produit.id} />
+                      <input type="hidden" name="direction" value="up" />
+                      <button
+                        type="submit"
+                        disabled={rang === 0}
+                        aria-label={`Monter ${produit.name}`}
+                        className="rounded-lg border border-bord px-2 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        ↑
+                      </button>
+                    </form>
+
+                    <form action={moveProduct}>
+                      <input type="hidden" name="id" value={produit.id} />
+                      <input type="hidden" name="direction" value="down" />
+                      <button
+                        type="submit"
+                        disabled={rang === groupe.produits.length - 1}
+                        aria-label={`Descendre ${produit.name}`}
+                        className="rounded-lg border border-bord px-2 py-1.5 text-sm text-ardoise transition hover:bg-creme-fonce disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        ↓
+                      </button>
+                    </form>
+
                     <form action={toggleAvailability}>
                       <input type="hidden" name="id" value={produit.id} />
                       <input

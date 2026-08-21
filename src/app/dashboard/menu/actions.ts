@@ -36,6 +36,7 @@ export async function createCategory(
   if (error) return { error: "Impossible d'ajouter la categorie." };
 
   revalidatePath("/dashboard/menu");
+  revalidatePath(`/${shop.slug}`);
   return OK;
 }
 
@@ -56,6 +57,7 @@ export async function renameCategory(formData: FormData): Promise<void> {
     .eq("shop_id", shop.id);
 
   revalidatePath("/dashboard/menu");
+  revalidatePath(`/${shop.slug}`);
 }
 
 export async function deleteCategory(formData: FormData): Promise<void> {
@@ -75,6 +77,7 @@ export async function deleteCategory(formData: FormData): Promise<void> {
     .eq("shop_id", shop.id);
 
   revalidatePath("/dashboard/menu");
+  revalidatePath(`/${shop.slug}`);
 }
 
 /** Deplace une categorie d'un cran, en echangeant sa position avec sa voisine. */
@@ -115,4 +118,5 @@ export async function moveCategory(formData: FormData): Promise<void> {
   ]);
 
   revalidatePath("/dashboard/menu");
+  revalidatePath(`/${shop.slug}`);
 }
