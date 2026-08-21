@@ -6,11 +6,12 @@ import { ErrorBox, Field, SubmitButton } from "@/components/form";
 
 const INITIAL: ShopState = { error: null };
 
-export function ShopForm() {
+export function ShopForm({ plan }: { plan: string }) {
   const [state, formAction] = useActionState(createShop, INITIAL);
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="plan" value={plan} />
       <Field
         label="Nom du snack"
         name="name"

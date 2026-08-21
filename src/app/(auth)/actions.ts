@@ -65,6 +65,7 @@ export async function signUp(
 ): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const plan = String(formData.get("plan") ?? "").trim();
 
   if (!email || !password) {
     return { ...VIDE, error: "Remplissez l'e-mail et le mot de passe." };
@@ -90,7 +91,13 @@ export async function signUp(
     };
   }
 
-  redirect("/dashboard");
+  // La formule choisie sur la page d'accueil suit jusqu'a la creation
+  // de la boutique, pour ne pas la redemander a l'ecran suivant.
+  redirect(
+    plan
+      ? `/dashboard/nouveau-magasin?plan=${encodeURIComponent(plan)}`
+      : "/dashboard",
+  );
 }
 
 export async function signOut() {

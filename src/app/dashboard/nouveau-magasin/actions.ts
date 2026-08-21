@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
+import { PLANS, type Plan } from "@/lib/plans";
 
 export type ShopState = { error: string | null };
 
@@ -33,6 +34,8 @@ export async function createShop(
   const phone = normaliserTelephone(String(formData.get("whatsapp") ?? ""));
   const address = String(formData.get("address") ?? "").trim();
   const feeRaw = String(formData.get("delivery_fee") ?? "0").replace(",", ".");
+  const planBrut = String(formData.get("plan") ?? "");
+  const plan: Plan = planBrut in PLANS ? (planBrut as Plan) : "essentiel";
 
   if (name.length < 2) {
     return { error: "Le nom du snack doit faire au moins 2 caracteres." };
@@ -76,6 +79,8 @@ export async function createShop(
       whatsapp_phone: phone,
       address: address || null,
       delivery_fee: fee,
+      plan,
+      monthly_price: PLANS[plan].prix,
     });
 
     if (!error) {

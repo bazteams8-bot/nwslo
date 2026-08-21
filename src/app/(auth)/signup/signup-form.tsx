@@ -7,7 +7,7 @@ import { ErrorBox, Field, NoticeBox, SubmitButton } from "@/components/form";
 
 const INITIAL: AuthState = { error: null, notice: null };
 
-export function SignupForm() {
+export function SignupForm({ plan }: { plan: string | null }) {
   const [state, formAction] = useActionState(signUp, INITIAL);
 
   // Compte cree mais en attente de confirmation : le formulaire n'a
@@ -28,6 +28,7 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      {plan ? <input type="hidden" name="plan" value={plan} /> : null}
       <Field
         label="E-mail"
         name="email"
