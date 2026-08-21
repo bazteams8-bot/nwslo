@@ -45,12 +45,6 @@ export default async function DashboardLayout({
                 Categories
               </Link>
               <Link
-                href="/dashboard/carte"
-                className="font-medium text-ardoise transition hover:text-terracotta-fonce"
-              >
-                Carte
-              </Link>
-              <Link
                 href="/dashboard/statistiques"
                 className="font-medium text-ardoise transition hover:text-terracotta-fonce"
               >

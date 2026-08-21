@@ -64,25 +64,3 @@ body {
 .defilement-discret::-webkit-scrollbar {
   display: none;
 }
-
-/* --- Impression de la carte ---------------------------------------- */
-@media print {
-  @page {
-    size: A4;
-    margin: 10mm;
-  }
-
-  /* Sans cela, le navigateur retire les aplats de couleur et les photos
-     perdent leur cadre : la carte imprimee ne ressemble plus a celle
-     affichee. */
-  * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* La navigation du tableau de bord n'a rien a faire sur la carte. */
-  header nav,
-  header form {
-    display: none !important;
-  }
-}
