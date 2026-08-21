@@ -40,19 +40,18 @@ export default async function Accueil() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-creme">
+      {/*
+        Aucun lien vers /pro : la page d'offre se partage de la main a
+        la main avec les snacks demarches. Cette page-ci s'adresse aux
+        clients, qui n'ont rien a y faire.
+      */}
       <header className="border-b border-bord bg-creme">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-5xl items-center px-4 py-4">
           <Link
             href="/"
             className="text-lg font-bold tracking-tight text-terracotta-fonce"
           >
             Nwslo
-          </Link>
-          <Link
-            href="/pro"
-            className="text-sm font-medium text-charbon hover:text-terracotta-fonce"
-          >
-            Vous avez un snack ?
           </Link>
         </div>
       </header>
@@ -71,10 +70,7 @@ export default async function Accueil() {
       </main>
 
       <footer className="border-t border-bord py-6 text-center text-sm text-ardoise-clair">
-        Nwslo — commandes en ligne pour les snacks au Maroc ·{" "}
-        <Link href="/pro" className="hover:text-terracotta-fonce">
-          proposer mon snack
-        </Link>
+        Nwslo — commandes en ligne pour les snacks au Maroc
       </footer>
     </div>
   );
