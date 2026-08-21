@@ -139,3 +139,65 @@ export async function changePassword(
 
   return { ...VIDE, notice: "Mot de passe modifie." };
 }
+
+/**
+ * Enregistre les horaires d'ouverture.
+ *
+ * Stockes comme un tableau de sept creneaux indexes sur le jour au sens
+ * de Postgres (0 = dimanche), pour que la base puisse decider seule si
+ * la boutique est ouverte — voir la migration 0009.
+ */
+export async function saveHours(
+  _prev: ReglagesState,
+  formData: FormData,
+): Promise<ReglagesState> {
+  const actifs = formData.get("horaires_actifs") === "on";
+
+  const { shop, supabase } = await getMyShop();
+  if (!shop) return { ...VIDE, error: "Aucun snack configure." };
+
+  let horaires: ({ o: string; c: string } | null)[] | null = null;
+
+  if (actifs) {
+    horaires = [];
+
+    for (let jour = 0; jour < 7; jour++) {
+      const ouvert = formData.get(`jour_${jour}_ouvert`) === "on";
+      const o = String(formData.get(`jour_${jour}_o`) ?? "");
+      const c = String(formData.get(`jour_${jour}_c`) ?? "");
+
+      if (!ouvert) {
+        horaires.push(null);
+        continue;
+      }
+
+      if (!/^\d{2}:\d{2}$/.test(o) || !/^\d{2}:\d{2}$/.test(c)) {
+        return {
+          ...VIDE,
+          error: "Renseignez une heure d'ouverture et de fermeture valides.",
+        };
+      }
+      if (o === c) {
+        return {
+          ...VIDE,
+          error: "L'ouverture et la fermeture ne peuvent pas etre identiques.",
+        };
+      }
+
+      horaires.push({ o, c });
+    }
+  }
+
+  const { error } = await supabase
+    .from("shops")
+    .update({ opening_hours: horaires })
+    .eq("id", shop.id);
+
+  if (error) return { ...VIDE, error: "Impossible d'enregistrer les horaires." };
+
+  revalidatePath("/dashboard/reglages");
+  revalidatePath(`/${shop.slug}`);
+  revalidatePath("/");
+
+  return { ...VIDE, notice: "Horaires enregistres." };
+}

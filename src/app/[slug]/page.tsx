@@ -131,6 +131,14 @@ export default async function BoutiquePage({ params }: PageProps<"/[slug]">) {
         })),
     }));
 
+  // « Ouvert » au sens du client : l'interrupteur du gerant et l'heure.
+  // La regle vit dans la base (migration 0009) pour que la page et le
+  // refus de commande ne puissent pas diverger.
+  const supabase = await createClient();
+  const { data: ouvertMaintenant } = await supabase.rpc("shop_ouvert", {
+    p_shop_id: boutique.id,
+  });
+
   const shop: Boutique = {
     id: boutique.id,
     name: boutique.name,
@@ -140,7 +148,7 @@ export default async function BoutiquePage({ params }: PageProps<"/[slug]">) {
     cover_url: boutique.cover_url,
     delivery_fee: Number(boutique.delivery_fee),
     min_order: Number(boutique.min_order),
-    is_open: boutique.is_open,
+    is_open: ouvertMaintenant ?? boutique.is_open,
     address: boutique.address,
   };
 
