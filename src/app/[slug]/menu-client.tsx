@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { Logo } from "@/components/logo";
 import {
   cleLigne,
   ecrirePanier,
@@ -298,6 +300,22 @@ export function MenuClient({
           </div>
         )}
       </main>
+
+      {/*
+        Chaque snack a sa propre identite sur cette page — logo, nom,
+        couleurs des produits — et c'est voulu. Ce lien discret est le
+        seul rappel que la commande passe par Nwslo : assez visible
+        pour que le client retienne le nom d'une commande a l'autre,
+        assez discret pour ne jamais concurrencer la marque du snack.
+      */}
+      <footer className="border-t border-bord px-4 py-6 text-center">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs text-ardoise-clair transition hover:text-terracotta-fonce"
+        >
+          Propulse par <Logo taille={16} avecNom={false} /> Nwslo
+        </Link>
+      </footer>
 
       {/* --- Panier ------------------------------------------------ */}
       {articles > 0 && shop.is_open ? (
