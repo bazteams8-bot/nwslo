@@ -43,8 +43,8 @@ export function Logo({
       </svg>
 
       {avecNom ? (
-        <span className="text-lg font-bold tracking-tight text-terracotta-fonce">
-          Nwslo
+        <span className="text-xl font-extrabold tracking-tight text-charbon">
+          Nws<span className="text-terracotta">lo</span>
         </span>
       ) : null}
     </span>
