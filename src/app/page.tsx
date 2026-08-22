@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Annuaire, type Snack } from "./annuaire";
@@ -60,12 +61,9 @@ export default async function Accueil() {
       */}
       <header className="border-b border-bord bg-creme">
         <div className="mx-auto flex max-w-5xl items-center px-4 py-4">
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-tight text-terracotta-fonce"
-          >
-            Nwslo
-          </Link>
+          <Link href="/">
+              <Logo />
+            </Link>
         </div>
       </header>
 

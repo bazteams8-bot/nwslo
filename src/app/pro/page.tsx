@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import type { Metadata } from "next";
 import { PLANS } from "@/lib/plans";
 
@@ -96,12 +97,9 @@ export default function Home() {
     <div className="flex min-h-full flex-1 flex-col bg-creme">
       <header className="sticky top-0 z-30 border-b border-bord bg-creme/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-tight text-terracotta-fonce"
-          >
-            Nwslo
-          </Link>
+          <Link href="/">
+              <Logo />
+            </Link>
           <div className="flex items-center gap-5 text-sm font-medium">
             <a href="#tarifs" className="text-charbon hover:text-terracotta-fonce">
               Tarifs

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import { getMyShop } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
 import { SelecteurBoutique } from "./selecteur";
@@ -14,12 +15,9 @@ export default async function DashboardLayout({
       <header className="border-b border-bord bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link
-              href="/dashboard"
-              className="text-lg font-bold tracking-tight text-terracotta-fonce"
-            >
-              Nwslo
-            </Link>
+            <Link href="/dashboard">
+                <Logo />
+              </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
