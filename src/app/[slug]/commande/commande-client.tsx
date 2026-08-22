@@ -67,6 +67,23 @@ function messageLisible(code: string): string {
   }
 }
 
+/**
+ * Meme bandeau que sur la page menu, present sur tout l'achat : le
+ * client ne doit jamais perdre de vue qu'il commande via Nwslo, du
+ * premier clic jusqu'a la confirmation.
+ */
+function BarreNwslo() {
+  return (
+    <Link
+      href="/"
+      className="flex items-center gap-1.5 bg-charbon px-4 py-2 text-xs text-creme-fonce transition hover:text-creme"
+    >
+      <Logo taille={16} avecNom={false} />
+      Vous commandez sur Nwslo
+    </Link>
+  );
+}
+
 export function CommandeClient({ shop }: { shop: Boutique }) {
   const [lignes, setLignes] = useState<LignePanier[]>([]);
   const [pret, setPret] = useState(false);
@@ -148,7 +165,9 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
 
   if (confirme) {
     return (
-      <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
+      <div className="flex min-h-full flex-1 flex-col">
+        <BarreNwslo />
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
         <p className="text-5xl">✅</p>
         <h1 className="mt-4 text-2xl font-bold text-charbon">
           Commande #{confirme.numero} confirmee
@@ -184,16 +203,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
         >
           Retour au menu
         </Link>
-
-        {/* Le moment ou le client retient le plus le nom : sa commande
-            vient d'etre acceptee. Lien vers l'annuaire, pas juste un
-            logo mort — de quoi decouvrir d'autres snacks sur Nwslo. */}
-        <Link
-          href="/"
-          className="mt-8 inline-flex items-center justify-center gap-1.5 text-xs text-ardoise-clair transition hover:text-terracotta-fonce"
-        >
-          Propulse par <Logo taille={16} avecNom={false} /> Nwslo
-        </Link>
+        </div>
       </div>
     );
   }
@@ -203,30 +213,38 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
   // formulaire affiche trop tot resterait vide.
   if (!pret) {
     return (
-      <div className="mx-auto flex min-h-full max-w-md flex-1 items-center justify-center px-4 py-12">
-        <p className="text-ardoise">Un instant...</p>
+      <div className="flex min-h-full flex-1 flex-col">
+        <BarreNwslo />
+        <div className="mx-auto flex w-full max-w-md flex-1 items-center justify-center px-4 py-12">
+          <p className="text-ardoise">Un instant...</p>
+        </div>
       </div>
     );
   }
 
   if (lignes.length === 0) {
     return (
-      <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
-        <h1 className="text-xl font-semibold text-charbon">
-          Votre panier est vide
-        </h1>
-        <Link
-          href={`/${shop.slug}`}
-          className="mt-4 rounded-lg bg-terracotta px-5 py-3 font-medium text-white transition hover:bg-terracotta-fonce"
-        >
-          Voir le menu
-        </Link>
+      <div className="flex min-h-full flex-1 flex-col">
+        <BarreNwslo />
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12 text-center">
+          <h1 className="text-xl font-semibold text-charbon">
+            Votre panier est vide
+          </h1>
+          <Link
+            href={`/${shop.slug}`}
+            className="mt-4 rounded-lg bg-terracotta px-5 py-3 font-medium text-white transition hover:bg-terracotta-fonce"
+          >
+            Voir le menu
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
+    <div className="flex min-h-full flex-1 flex-col">
+      <BarreNwslo />
+      <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
       <Link
         href={`/${shop.slug}`}
         className="text-sm text-ardoise-clair hover:text-terracotta-fonce"
@@ -378,6 +396,7 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
           le message pret a envoyer.
         </p>
       </form>
+      </div>
     </div>
   );
 }
