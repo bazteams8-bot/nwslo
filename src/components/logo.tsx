@@ -1,5 +1,10 @@
 /**
- * La marque : un bol fumant, et le nom a cote.
+ * La marque : une bulle de message avec un menu dedans, et le nom a cote.
+ *
+ * Le signe represente le service, pas la nourriture : la commande arrive
+ * chez le gerant comme un message, et les deux lignes evoquent un menu.
+ * Ce choix reste lisible si Nwslo s'etend un jour a d'autres secteurs
+ * que la restauration rapide — rien ici n'evoque un plat.
  *
  * Le signe est dessine en SVG plutot que charge comme image — il suit
  * la taille demandee sans jamais etre flou, et ne coute aucune requete.
@@ -24,16 +29,17 @@ export function Logo({
         className="shrink-0"
       >
         <rect width="48" height="48" rx="12" fill="var(--terracotta)" />
+        <path
+          d="M11 15a4 4 0 0 1 4-4h18a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H22l-8 7v-7a3 3 0 0 1-3-3z"
+          fill="var(--creme)"
+        />
         <g
-          stroke="var(--creme)"
-          strokeWidth="3.2"
+          stroke="var(--terracotta)"
+          strokeWidth="2.6"
           strokeLinecap="round"
-          fill="none"
         >
-          <path d="M19 20c0-2.8 2.6-2.8 2.6-5.6S19 11.6 19 8.8" />
-          <path d="M29 20c0-2.8 2.6-2.8 2.6-5.6S29 11.6 29 8.8" />
+          <path d="M17 18h14M17 24h9" />
         </g>
-        <path d="M9 25.5h30a15 15 0 0 1-30 0z" fill="var(--creme)" />
       </svg>
 
       {avecNom ? (
