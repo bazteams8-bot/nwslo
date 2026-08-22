@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase/client";
 import {
   ecrirePanier,
@@ -182,6 +183,16 @@ export function CommandeClient({ shop }: { shop: Boutique }) {
           className="mt-4 text-sm text-ardoise-clair hover:text-terracotta-fonce"
         >
           Retour au menu
+        </Link>
+
+        {/* Le moment ou le client retient le plus le nom : sa commande
+            vient d'etre acceptee. Lien vers l'annuaire, pas juste un
+            logo mort — de quoi decouvrir d'autres snacks sur Nwslo. */}
+        <Link
+          href="/"
+          className="mt-8 inline-flex items-center justify-center gap-1.5 text-xs text-ardoise-clair transition hover:text-terracotta-fonce"
+        >
+          Propulse par <Logo taille={16} avecNom={false} /> Nwslo
         </Link>
       </div>
     );
