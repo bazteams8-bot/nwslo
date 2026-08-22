@@ -117,6 +117,21 @@ export function MenuClient({
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-creme pb-28">
+      {/*
+        Bandeau permanent, present des le premier ecran : la carte qui
+        suit appartient au snack, mais le client doit savoir tout du
+        long ou il commande. Le footer en bas de page ne suffisait pas
+        — un client qui commande vite sans faire defiler ne le voyait
+        jamais.
+      */}
+      <Link
+        href="/"
+        className="flex items-center gap-1.5 bg-charbon px-4 py-2 text-xs text-creme-fonce transition hover:text-creme"
+      >
+        <Logo taille={16} avecNom={false} />
+        Vous commandez sur Nwslo
+      </Link>
+
       {/* --- Couverture et identite ------------------------------- */}
       <div className="relative h-32 w-full bg-terracotta sm:h-44">
         {shop.cover_url ? (
@@ -302,11 +317,10 @@ export function MenuClient({
       </main>
 
       {/*
-        Chaque snack a sa propre identite sur cette page — logo, nom,
-        couleurs des produits — et c'est voulu. Ce lien discret est le
-        seul rappel que la commande passe par Nwslo : assez visible
-        pour que le client retienne le nom d'une commande a l'autre,
-        assez discret pour ne jamais concurrencer la marque du snack.
+        Rappel de fin de page, en plus du bandeau tout en haut : un
+        client qui a fait defiler toute la carte le revoit avant de
+        passer commande, sans jamais concurrencer la marque du snack
+        (qui reste, elle, en tete de page).
       */}
       <footer className="border-t border-bord px-4 py-6 text-center">
         <Link
