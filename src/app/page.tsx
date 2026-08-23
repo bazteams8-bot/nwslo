@@ -40,6 +40,7 @@ export default async function Accueil() {
 
   const snacks: Snack[] = ((data ?? []) as Ligne[]).map((s) => ({
     id: s.id,
+    kind: s.kind,
     name: s.name,
     slug: s.slug,
     description: s.description,
@@ -50,6 +51,7 @@ export default async function Accueil() {
     delivery_fee: Number(s.delivery_fee),
     is_open: s.is_open,
     est_nouveau: s.est_nouveau,
+    succursales: s.succursales,
   }));
 
   return (

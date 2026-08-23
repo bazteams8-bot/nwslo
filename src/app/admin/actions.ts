@@ -224,6 +224,49 @@ export async function changePlan(formData: FormData): Promise<void> {
   revalidatePath("/admin");
 }
 
+/** Cree une enseigne vide, prete a recevoir des succursales. */
+export async function createBusiness(formData: FormData): Promise<void> {
+  const nom = String(formData.get("name") ?? "").trim();
+  if (nom.length < 2 || nom.length > 80) return;
+
+  const { admin } = await requireAdmin();
+  const base = slugifier(nom) || "enseigne";
+
+  for (let essai = 0; essai < 5; essai++) {
+    const slug = essai === 0 ? base : `${base}-${essai + 1}`;
+    const { error } = await admin.from("businesses").insert({ name: nom, slug });
+    if (!error) break;
+    if (error.code !== "23505") break;
+  }
+
+  revalidatePath("/admin");
+}
+
+/**
+ * Rattache (ou detache) une boutique a une enseigne.
+ *
+ * Detacher est volontaire : une boutique reste commandable normalement
+ * pendant que le rattachement change, rien ne casse le temps de
+ * l'operation.
+ */
+export async function assignShopToBusiness(formData: FormData): Promise<void> {
+  const shopId = String(formData.get("shop_id") ?? "");
+  const businessId = String(formData.get("business_id") ?? "");
+  const branchLabel = String(formData.get("branch_label") ?? "").trim();
+  if (!shopId) return;
+
+  const { admin } = await requireAdmin();
+  await admin
+    .from("shops")
+    .update({
+      business_id: businessId || null,
+      branch_label: branchLabel || null,
+    })
+    .eq("id", shopId);
+
+  revalidatePath("/admin");
+}
+
 export type ResetState = { error: string | null; motDePasse: string | null };
 
 /**

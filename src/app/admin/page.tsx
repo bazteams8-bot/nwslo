@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin";
 import { DUREES, etatQuota, PLANS, type Plan } from "@/lib/plans";
 import { NewShopForm } from "./new-shop-form";
-import { changePlan, renewSubscription, toggleShopActive } from "./actions";
+import {
+  assignShopToBusiness,
+  changePlan,
+  createBusiness,
+  renewSubscription,
+  toggleShopActive,
+} from "./actions";
 import { ResetPassword } from "./reset-password";
 
 export const metadata: Metadata = { title: "Administration — Nwslo" };
@@ -71,19 +77,28 @@ export default async function AdminPage() {
   debutDuMois.setDate(1);
   debutDuMois.setHours(0, 0, 0, 0);
 
-  const [{ data: boutiques }, { data: produits }, { data: commandes }, comptes] =
-    await Promise.all([
-      admin
-        .from("shops")
-        .select(
-          `id, name, slug, owner_id, is_active, plan, monthly_price, is_trial,
-           subscribed_at, subscription_until, created_at`,
-        )
-        .order("created_at", { ascending: true }),
-      admin.from("products").select("shop_id"),
-      admin.from("orders").select("shop_id, created_at"),
-      admin.auth.admin.listUsers({ perPage: 200 }),
-    ]);
+  const [
+    { data: boutiques },
+    { data: produits },
+    { data: commandes },
+    { data: entreprises },
+    comptes,
+  ] = await Promise.all([
+    admin
+      .from("shops")
+      .select(
+        `id, name, slug, owner_id, is_active, plan, monthly_price, is_trial,
+         subscribed_at, subscription_until, created_at, business_id, branch_label`,
+      )
+      .order("created_at", { ascending: true }),
+    admin.from("products").select("shop_id"),
+    admin.from("orders").select("shop_id, created_at"),
+    admin.from("businesses").select("id, name, slug").order("name"),
+    admin.auth.admin.listUsers({ perPage: 200 }),
+  ]);
+
+  const entreprisesListe = entreprises ?? [];
+  const nomEntreprise = new Map(entreprisesListe.map((e) => [e.id, e.name]));
 
   const emailPar = new Map(
     (comptes.data?.users ?? []).map((u) => [u.id, u.email ?? "—"]),
@@ -109,6 +124,46 @@ export default async function AdminPage() {
       <section className="rounded-2xl border border-bord bg-white p-5">
         <h2 className="mb-4 font-medium text-charbon">Nouveau snack</h2>
         <NewShopForm />
+      </section>
+
+      <section className="rounded-2xl border border-bord bg-white p-5">
+        <h2 className="font-medium text-charbon">Enseignes</h2>
+        <p className="mt-1 text-sm text-ardoise">
+          Regroupe plusieurs snacks sous une seule fiche dans l&apos;annuaire
+          — le client choisit sa succursale avant d&apos;arriver au menu.
+        </p>
+
+        {entreprisesListe.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {entreprisesListe.map((e) => (
+              <li key={e.id}>
+                <Link
+                  href={`/enseigne/${e.slug}`}
+                  className="rounded-full border border-bord px-3 py-1 text-sm text-terracotta transition hover:border-terracotta"
+                >
+                  {e.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <form action={createBusiness} className="mt-4 flex items-center gap-2">
+          <input
+            name="name"
+            placeholder="Nom de l'enseigne, ex. Snack Badr"
+            required
+            minLength={2}
+            maxLength={80}
+            className={CHAMP + " flex-1"}
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-terracotta px-3 py-1.5 text-sm font-medium text-white transition hover:bg-terracotta-fonce"
+          >
+            Creer
+          </button>
+        </form>
       </section>
 
       <section className="space-y-3">
@@ -155,6 +210,12 @@ export default async function AdminPage() {
                     {!boutique.is_active ? (
                       <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-normal text-red-800">
                         suspendu
+                      </span>
+                    ) : null}
+                    {boutique.business_id ? (
+                      <span className="rounded-full bg-terracotta-pale px-2 py-0.5 text-xs font-normal text-terracotta-fonce">
+                        {nomEntreprise.get(boutique.business_id) ?? "enseigne"}
+                        {boutique.branch_label ? ` · ${boutique.branch_label}` : ""}
                       </span>
                     ) : null}
                   </p>
@@ -260,6 +321,40 @@ export default async function AdminPage() {
 
                 <ResetPassword shopId={boutique.id} />
               </div>
+
+              {entreprisesListe.length > 0 ? (
+                <form
+                  action={assignShopToBusiness}
+                  className="mt-2 flex flex-wrap items-center gap-2 border-t border-bord pt-3"
+                >
+                  <input type="hidden" name="shop_id" value={boutique.id} />
+                  <select
+                    name="business_id"
+                    defaultValue={boutique.business_id ?? ""}
+                    className={CHAMP}
+                  >
+                    <option value="">Aucune enseigne</option>
+                    {entreprisesListe.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    name="branch_label"
+                    placeholder="Nom de la succursale, ex. Maarif"
+                    defaultValue={boutique.branch_label ?? ""}
+                    maxLength={40}
+                    className={CHAMP}
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-bord px-3 py-1.5 text-sm font-medium text-charbon transition hover:bg-creme-fonce"
+                  >
+                    Rattacher
+                  </button>
+                </form>
+              ) : null}
             </article>
           );
         })}

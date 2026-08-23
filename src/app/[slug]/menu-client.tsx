@@ -32,6 +32,8 @@ type Boutique = {
   min_order: number;
   is_open: boolean;
   address: string | null;
+  branch_label: string | null;
+  enseigne: { name: string; slug: string } | null;
 };
 
 const SANS_CATEGORIE = "Autres";
@@ -170,7 +172,24 @@ export function MenuClient({
 
         <h1 className="mt-3 text-2xl font-semibold text-charbon">
           {shop.name}
+          {shop.branch_label ? (
+            <span className="ms-2 text-base font-normal text-ardoise-clair">
+              — {shop.branch_label}
+            </span>
+          ) : null}
         </h1>
+
+        {/* Cette succursale fait partie d'une enseigne a plusieurs
+            adresses : lien pour retourner en choisir une autre. */}
+        {shop.enseigne ? (
+          <Link
+            href={`/enseigne/${shop.enseigne.slug}`}
+            className="mt-0.5 inline-block text-sm text-ardoise-clair transition hover:text-terracotta-fonce"
+          >
+            Succursale de {shop.enseigne.name} · voir les autres
+          </Link>
+        ) : null}
+
         {shop.description ? (
           <p className="mt-1 text-ardoise">{shop.description}</p>
         ) : null}

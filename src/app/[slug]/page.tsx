@@ -15,6 +15,8 @@ type Boutique = {
   min_order: number;
   is_open: boolean;
   address: string | null;
+  branch_label: string | null;
+  enseigne: { name: string; slug: string } | null;
 };
 
 async function chargerBoutique(slug: string) {
@@ -28,6 +30,7 @@ async function chargerBoutique(slug: string) {
     .select(
       `id, name, slug, description, logo_url, cover_url,
        delivery_fee, min_order, is_open, address,
+       branch_label, businesses (name, slug),
        categories (id, name, position),
        products (
          id, name, description, price, image_url, is_available, category_id, position,
@@ -139,6 +142,12 @@ export default async function BoutiquePage({ params }: PageProps<"/[slug]">) {
     p_shop_id: boutique.id,
   });
 
+  // Relation to-un renvoyee comme un tableau par le client Supabase,
+  // meme quand `business_id` ne pointe que vers une seule enseigne.
+  const enseigneBrute = Array.isArray(boutique.businesses)
+    ? boutique.businesses[0]
+    : boutique.businesses;
+
   const shop: Boutique = {
     id: boutique.id,
     name: boutique.name,
@@ -150,6 +159,10 @@ export default async function BoutiquePage({ params }: PageProps<"/[slug]">) {
     min_order: Number(boutique.min_order),
     is_open: ouvertMaintenant ?? boutique.is_open,
     address: boutique.address,
+    branch_label: boutique.branch_label,
+    enseigne: enseigneBrute
+      ? { name: enseigneBrute.name, slug: enseigneBrute.slug }
+      : null,
   };
 
   return (
