@@ -38,6 +38,11 @@ function messageLisible(code: string): string {
   switch (code) {
     case "SNACK_FERME":
       return "Ce snack vient de fermer. Reessayez plus tard.";
+    // L'abonnement du snack est echu. Cela ne regarde pas son client :
+    // on lui dit que la boutique ne prend plus de commandes, pas
+    // pourquoi.
+    case "ABONNEMENT_EXPIRE":
+      return "Ce snack ne prend plus de commandes pour le moment.";
     case "PANIER_VIDE":
       return "Votre panier est vide.";
     case "PRODUIT_INDISPONIBLE":

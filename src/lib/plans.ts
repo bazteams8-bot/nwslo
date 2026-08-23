@@ -40,6 +40,36 @@ export function estEssai(duree: Duree): boolean {
   return DUREES.find((d) => d.valeur === duree)?.essai ?? false;
 }
 
+/**
+ * Jours de tolerance apres la fin d'abonnement avant la fermeture.
+ *
+ * Doit rester d'accord avec `abonnement_valide()` (migration 0013) :
+ * c'est la base qui ferme reellement, ce qui est ecrit ici ne sert
+ * qu'a prevenir le gerant avant que cela arrive.
+ */
+export const JOURS_DE_GRACE = 3;
+
+const JOUR_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Ce qu'il reste avant la fermeture automatique.
+ *
+ * Negatif une fois la boutique fermee, `null` quand l'abonnement
+ * n'est pas suivi. La comparaison se fait de minuit a minuit, comme
+ * `current_date` cote base.
+ */
+export function joursAvantFermeture(fin: string | null): number | null {
+  if (!fin) return null;
+
+  const terme = new Date(fin + "T00:00:00");
+  terme.setDate(terme.getDate() + JOURS_DE_GRACE);
+
+  const aujourdhui = new Date();
+  aujourdhui.setHours(0, 0, 0, 0);
+
+  return Math.round((terme.getTime() - aujourdhui.getTime()) / JOUR_MS);
+}
+
 /** Etat du quota de commandes du mois en cours. */
 export function etatQuota(plan: Plan, commandesDuMois: number) {
   const { plafond } = PLANS[plan];
