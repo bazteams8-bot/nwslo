@@ -3,6 +3,7 @@ import { Logo } from "@/components/logo";
 import { getMyShop } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
 import { SelecteurBoutique } from "./selecteur";
+import { BandeauAbonnement } from "./bandeau-abonnement";
 
 export default async function DashboardLayout({
   children,
@@ -78,7 +79,10 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-4 py-8">
+        {/* Dans la mise en page, pas sur l'accueil : la fermeture doit
+            se voir depuis n'importe quelle page du tableau de bord. */}
+        {shop ? <BandeauAbonnement fin={shop.subscription_until} /> : null}
         {children}
       </main>
     </div>
