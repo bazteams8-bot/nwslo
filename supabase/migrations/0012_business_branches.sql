@@ -22,6 +22,20 @@ create table if not exists public.businesses (
 
 alter table public.businesses enable row level security;
 
+-- La colonne qui relie une boutique a son enseigne doit exister avant
+-- toute regle qui s'appuie dessus.
+alter table public.shops
+  add column if not exists business_id  uuid references public.businesses(id) on delete set null,
+  add column if not exists branch_label text;
+
+comment on column public.shops.business_id is
+  'Enseigne dont cette boutique est une succursale. NULL = boutique independante.';
+comment on column public.shops.branch_label is
+  'Nom court de cette succursale au sein de l''enseigne, ex. "Maarif".';
+
+create index if not exists shops_business_idx
+  on public.shops (business_id) where business_id is not null;
+
 -- Seul l'exploitant (cle de service) cree ou modifie une enseigne : le
 -- regroupement reste, comme la creation de boutique, decide a la main
 -- plutot que laisse en libre-service.
@@ -35,18 +49,6 @@ using (
        and public.is_shop_owner(s.id)
   )
 );
-
-alter table public.shops
-  add column if not exists business_id  uuid references public.businesses(id) on delete set null,
-  add column if not exists branch_label text;
-
-comment on column public.shops.business_id is
-  'Enseigne dont cette boutique est une succursale. NULL = boutique independante.';
-comment on column public.shops.branch_label is
-  'Nom court de cette succursale au sein de l''enseigne, ex. "Maarif".';
-
-create index if not exists shops_business_idx
-  on public.shops (business_id) where business_id is not null;
 
 -- ---------------------------------------------------------------------
 -- La fiche publique d'une enseigne : son identite, et la liste de ses
