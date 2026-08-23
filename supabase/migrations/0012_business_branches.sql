@@ -36,17 +36,19 @@ comment on column public.shops.branch_label is
 create index if not exists shops_business_idx
   on public.shops (business_id) where business_id is not null;
 
--- Seul l'exploitant (cle de service) cree ou modifie une enseigne : le
--- regroupement reste, comme la creation de boutique, decide a la main
--- plutot que laisse en libre-service.
-create policy "Le gerant lit l'enseigne de sa boutique"
+-- Meme regle de lecture publique que sur shops (migration 0001) : une
+-- enseigne se lit des qu'elle a au moins une succursale active. Sans
+-- cette regle, PostgREST filtre silencieusement la relation imbriquee
+-- `businesses(...)` pour un visiteur anonyme — pas d'erreur, juste
+-- null, ce qui masquait le lien retour vers l'enseigne sur la page
+-- boutique.
+create policy "L'enseigne se lit des qu'elle a une succursale active"
 on public.businesses for select
-to authenticated
 using (
   exists (
     select 1 from public.shops s
      where s.business_id = businesses.id
-       and public.is_shop_owner(s.id)
+       and s.is_active
   )
 );
 
