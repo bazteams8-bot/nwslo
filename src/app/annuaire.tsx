@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 export type Snack = {
   id: string;
+  kind: "shop" | "business";
   name: string;
   slug: string;
   description: string | null;
@@ -16,6 +17,7 @@ export type Snack = {
   delivery_fee: number;
   is_open: boolean;
   est_nouveau: boolean;
+  succursales: number;
 };
 
 const TOUTES = "Toutes les villes";
@@ -107,7 +109,14 @@ export function Annuaire({ snacks }: { snacks: Snack[] }) {
           {resultats.map((snack) => (
             <li key={snack.id}>
               <Link
-                href={`/${snack.slug}`}
+                // Une enseigne a plusieurs succursales renvoie vers le
+                // choix de succursale, pas directement vers un menu :
+                // il n'existe pas de « menu de l'enseigne » unique.
+                href={
+                  snack.kind === "business"
+                    ? `/enseigne/${snack.slug}`
+                    : `/${snack.slug}`
+                }
                 className="block overflow-hidden rounded-2xl border border-bord bg-white transition hover:border-terracotta"
               >
                 <div className="relative h-28 w-full bg-terracotta">
@@ -171,6 +180,11 @@ export function Annuaire({ snacks }: { snacks: Snack[] }) {
                     {snack.city ? (
                       <span className="rounded-full bg-creme-fonce px-2 py-0.5 text-ardoise">
                         {snack.city}
+                      </span>
+                    ) : null}
+                    {snack.succursales > 1 ? (
+                      <span className="rounded-full bg-creme-fonce px-2 py-0.5 text-ardoise">
+                        {snack.succursales} succursales
                       </span>
                     ) : null}
                   </div>

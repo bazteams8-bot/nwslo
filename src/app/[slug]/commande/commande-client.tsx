@@ -76,7 +76,7 @@ function BarreNwslo() {
   return (
     <Link
       href="/"
-      className="flex items-center gap-1.5 bg-charbon px-4 py-2 text-xs text-creme-fonce transition hover:text-creme"
+      className="flex items-center justify-center gap-1.5 bg-charbon px-4 py-2 text-xs text-creme-fonce transition hover:text-creme"
     >
       <Logo taille={16} avecNom={false} />
       Vous commandez sur Nwslo
