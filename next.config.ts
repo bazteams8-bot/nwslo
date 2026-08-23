@@ -28,6 +28,25 @@ const nextConfig: NextConfig = {
         ]
       : [],
   },
+
+  async headers() {
+    return [
+      {
+        // Le service worker doit pouvoir controler tout le site, pas
+        // seulement /sw.js — d'ou `Service-Worker-Allowed`.
+        //
+        // Et il ne doit jamais etre servi depuis un cache : un gerant
+        // resterait avec l'ancienne version des alertes, sans moyen de
+        // s'en apercevoir.
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

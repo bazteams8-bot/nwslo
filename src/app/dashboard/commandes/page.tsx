@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getMyShop } from "@/lib/auth";
 import { CommandesClient, type Commande } from "./commandes-client";
+import { Alertes } from "./alertes";
 
 export const metadata: Metadata = { title: "Commandes — Nwslo" };
 
@@ -69,5 +70,10 @@ export default async function CommandesPage() {
     })),
   }));
 
-  return <CommandesClient shopId={shop.id} commandes={commandes} />;
+  return (
+    <div className="space-y-4">
+      <Alertes />
+      <CommandesClient shopId={shop.id} commandes={commandes} />
+    </div>
+  );
 }
