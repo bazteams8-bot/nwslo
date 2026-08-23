@@ -94,7 +94,12 @@ grant execute on function public.enseigne_publique(text) to anon, authenticated;
 -- commandes qui decide du tri n'est toujours pas expose — voir
 -- migration 0008.
 -- ---------------------------------------------------------------------
-create or replace function public.snacks_publics()
+-- La forme du tableau renvoye change (colonnes en plus) : Postgres ne
+-- laisse pas `create or replace` alterer la liste des colonnes de
+-- sortie d'une fonction existante, il faut la supprimer d'abord.
+drop function if exists public.snacks_publics();
+
+create function public.snacks_publics()
 returns table (
   id           uuid,
   kind         text,
